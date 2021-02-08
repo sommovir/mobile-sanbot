@@ -6,5 +6,8 @@ package it.cnr.mobilebot;
 public enum FaceType {
 
     NORMAL,
-    SAD
+    SAD,
+    LOVE,
+    LAUGH,
+    OUTRAGE
 }

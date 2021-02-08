@@ -1,11 +1,16 @@
 package it.cnr.mobilebot;
 
 import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -13,16 +18,26 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.MediaController;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
+import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class FaceActivity extends AppCompatActivity {
+public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnInitListener {
 
+
+    private boolean stopme = false;
+    private boolean test = false;
     private final int REQ_CODE = 100;
     private ImageView occhiView;
     private ImageView palliniView;
@@ -32,9 +47,9 @@ public class FaceActivity extends AppCompatActivity {
     private ImageView occhioDXView;
     private ImageView occhioSXView_OVER;
     private ImageView occhioDXView_OVER;
-
+    TextToSpeech tts = null;
     Animation shake,tristi_contorno,ciglia_tremanti,cuoricino_SX,cuoricino_DX,cuoricino_SX_RED,cuoricino_DX_RED,cuoricino_contorno,
-            animation_cry_ciglia, animation_blackdown,animation_fast_fade, animation_fast_fade_inverted;
+            animation_cry_ciglia, animation_blackdown,animation_fast_fade, animation_fast_fade_inverted, shake_vertical,outrage_anim;
 
     MQTTManager manager = null;
 
@@ -46,7 +61,47 @@ public class FaceActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
+
+
+        /*
+        VideoDialog videoDialogFragment = (VideoDialog) getSupportFragmentManager()
+                .findFragmentById(R.id.videoContainer);
+
+
+        if(videoDialogFragment == null){
+            System.out.println("IL CULONE DELLE SCALDABAGNO");
+        }
+
+
+
+        View viewThatContainsVideoView = findViewById(R.id.videoContainer); //TODO
+
+        if(viewThatContainsVideoView == null){
+            System.out.println("LA GRANDE MINCHIA");
+        }
+
+
+        VideoView videoView = (VideoView) viewThatContainsVideoView.findViewById(R.id.videoView);
+
+
+        if(videoView == null){
+            System.out.println("EH NO EH !!!!!! NON SI FANNO QUESTE COSE");
+        }
+        String videoPath = "android.resource://"+getPackageName() + "/"+R.raw.peggio;
+        Uri uri = Uri.parse(videoPath);
+        videoView.setVideoURI(uri);
+
+        MediaController mediaController = new MediaController(this);
+        videoView.setMediaController(mediaController);
+        mediaController.setAnchorView(videoView);
+
+         */
+
+
+        tts = new TextToSpeech(this, this);
+
         shake = AnimationUtils.loadAnimation(this,R.anim.shake);
+        shake_vertical = AnimationUtils.loadAnimation(this,R.anim.shake_vertical);
         tristi_contorno = AnimationUtils.loadAnimation(this,R.anim.contorno_tristi);
         ciglia_tremanti = AnimationUtils.loadAnimation(this,R.anim.ciglia_tremolio);
         cuoricino_SX = AnimationUtils.loadAnimation(this,R.anim.cuoricino_sx);
@@ -58,6 +113,8 @@ public class FaceActivity extends AppCompatActivity {
         animation_blackdown = AnimationUtils.loadAnimation(this,R.anim.blackdown);
         animation_fast_fade = AnimationUtils.loadAnimation(this,R.anim.fast_fade);
         animation_fast_fade_inverted = AnimationUtils.loadAnimation(this,R.anim.fast_fade_inverted);
+        outrage_anim = AnimationUtils.loadAnimation(this,R.anim.outrage_anim);
+
 
 
         occhiView = findViewById(R.id.occhi);
@@ -100,15 +157,11 @@ public class FaceActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                if(true){
-                    piangi();
-                    return false;
-                }
+
 
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
                     //lastDown = System.currentTimeMillis();
 
-                    manager.publish("ciao bello");
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                    // lastDuration = System.currentTimeMillis() - lastDown;
                 }
@@ -123,7 +176,7 @@ public class FaceActivity extends AppCompatActivity {
 //                android:src="@drawable/occhi_aperti"
 
                // intristiscitiAnimosamente();
-                clear();
+                stopCry();
                 occhiView.setImageResource(R.drawable.occhi_chiusi);
 
                 new Handler().postDelayed(new Runnable() {
@@ -141,11 +194,55 @@ public class FaceActivity extends AppCompatActivity {
 
     //MQTT PART
 
+        System.out.println("connecting MQTT.. ");
         manager = new MQTTManager(this.getApplicationContext());
+        manager.setFaceActivity(this);
+
+
 
     }
 
-    private void clear(){
+    public void esprimiQualcheDubbio(){
+        stopCry();
+
+        occhiView.setImageResource(R.drawable.question_face_1);
+        for (int i = 0; i < 5; i++) {
+
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    occhiView.setImageResource(R.drawable.question_face_2);
+
+                }
+            }, 200 + 1500*i);
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    occhiView.setImageResource(R.drawable.question_face_1);
+
+                }
+            }, 1500 + 1500*i);
+
+        }
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                occhiView.setImageResource(R.drawable.question_face_2);
+
+            }
+        }, 200 + 1500*6);
+
+    }
+
+    public void stopCry(){
+        stopme = true;
+        clear();
+    }
+
+    public void clear(){
+
         occhiView.setImageResource(android.R.color.transparent);
         palliniView.setImageResource(android.R.color.transparent);
         sopraccigliaView.setImageResource(android.R.color.transparent);
@@ -154,10 +251,15 @@ public class FaceActivity extends AppCompatActivity {
         occhioSXView.setImageResource(android.R.color.transparent);
         occhioDXView_OVER.setImageResource(android.R.color.transparent);
         occhioSXView_OVER.setImageResource(android.R.color.transparent);
+       // if(animation_blackdown !=null) animation_blackdown.cancel();
 
     }
 
-    private void lacrimevoliLacrime(){
+
+    public void lacrimevoliLacrime(){
+        if(stopme){
+            return;
+        }
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -181,9 +283,11 @@ public class FaceActivity extends AppCompatActivity {
     }
 
 
-    private void piangi(){
+    public void piangi(){
         System.out.println("\t\t\t\tSTO PIANGENDO ");
+        stopme = false;
         clear();
+
         sopraccigliaView.setImageResource(R.drawable.nparola);
         sopraccigliaView.setAnimation(animation_blackdown);
 
@@ -266,10 +370,10 @@ public class FaceActivity extends AppCompatActivity {
 
     }
 
-    private void innamorati(){
+    public void innamorati(){
 
         System.out.println("\t\t\t\tMI STO INNAMORANDO DAVVERO ");
-        clear();
+        stopCry();
 
         LinearLayout cuoriLayout = (LinearLayout) findViewById(R.id.occhi_over_layout);
         cuoriLayout.bringToFront();
@@ -294,7 +398,7 @@ public class FaceActivity extends AppCompatActivity {
 
     }
 
-    private void intristiscitiAnimosamente(){
+    public void intristiscitiAnimosamente(){
         occhiView.setImageResource(android.R.color.transparent);
         palliniView.setImageResource(R.drawable.occhi_tristi_pallini);
         palliniView.setAnimation(shake);
@@ -303,6 +407,32 @@ public class FaceActivity extends AppCompatActivity {
 
         contorno_occhiView.setImageResource(R.drawable.occhi_tristi_contorno_occhi);
         contorno_occhiView.setAnimation(tristi_contorno);
+
+    }
+
+    public void incazzati(){
+
+        occhiView.setImageResource(android.R.color.transparent);
+        palliniView.setImageResource(R.drawable.outrage_flames);
+        palliniView.setAnimation(shake);
+
+        contorno_occhiView.setImageResource(R.drawable.outrage_contorno);
+        contorno_occhiView.setAnimation(outrage_anim);
+
+    }
+
+    public  void ilRisoAbbonda(){
+        System.out.println("\t\t\t\tIL RISO ABBONDA ..");
+        stopCry();
+
+        occhiView.setImageResource(android.R.color.transparent);
+        palliniView.setImageResource(R.drawable.ridacchia_pupille);
+        palliniView.setAnimation(shake_vertical);
+        //sopraccigliaView.setImageResource(R.drawable.ridacchia_contorno);
+        //sopraccigliaView.setAnimation(ciglia_tremanti);
+
+        contorno_occhiView.setImageResource(R.drawable.ridacchia_contorno);
+        //contorno_occhiView.setAnimation(tristi_contorno);
 
     }
 
@@ -319,17 +449,51 @@ public class FaceActivity extends AppCompatActivity {
                             ""+result.get(0),
                             Toast.LENGTH_SHORT).show();
 
-                    //manager.publish(""+result.get(0));
+                    manager.publish(""+result.get(0));
+                    //if(!test)
 
-                    manager.publish("ciao bello");
 
 
                     if((""+result.get(0)).equals("sono triste")){
 
                         intristiscitiAnimosamente();
 
+                        //tts.setLanguage(Locale.ITALIAN);
+                       // tts.speak("Text to say aloud", TextToSpeech.QUEUE_ADD, null);
+
+                        tts.speak("Mi dispiace amico mio",TextToSpeech.QUEUE_FLUSH,null,null);
+
                 }else if((""+result.get(0)).equals("sono felice")){
                         innamorati();
+                    }
+                    else if((""+result.get(0)).toLowerCase().contains("mi è morto il gatto")){
+                        piangi();
+                    }
+                    else if((""+result.get(0)).contains("sei simpatico")){
+                        ilRisoAbbonda();
+                    }
+                    else if((""+result.get(0)).contains("cognitivo")){
+                        showTestChoice();
+                    }
+                    else if((""+result.get(0)).contains("tabella")){
+                        String message = "laboratorio di filatelia;16:30-18:00!laboratorio di filatelia;16:30-18:00";
+
+                        showTableData(message.split("!"));
+                    }
+                    else if((""+result.get(0)).contains("dubbio")){
+                        esprimiQualcheDubbio();
+                    }
+                    else if((""+result.get(0)).contains("franchestin")){
+
+                        Intent videoDialogIntent = new Intent(FaceActivity.this, VideoDialog.class);
+                        FaceActivity.this.startActivity(videoDialogIntent);
+
+
+                      //  VideoDialog videoDialog = new VideoDialog();
+                      //  videoDialog.show(getSupportFragmentManager(), "video");
+                       // videoDialog.startActivity();
+                      //  System.out.println("PACKAGE NAME = "+getPackageName());
+                      //  videoDialog.play("NON SI SA");
                     }
 
 //                    else{
@@ -340,6 +504,134 @@ public class FaceActivity extends AppCompatActivity {
                 }
                 break;
             }
+        }
+    }
+
+    public void showVideo(){
+        Intent videoDialogIntent = new Intent(FaceActivity.this, VideoDialog.class);
+        FaceActivity.this.startActivity(videoDialogIntent);
+    }
+
+
+    public void speakText(View v, String text) {
+
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+
+    }
+
+    public void showTableData(String[] data){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Informazioni");
+
+        Context dialogContext = builder.getContext();
+        LayoutInflater inflater = LayoutInflater.from(dialogContext);
+        View alertView = inflater.inflate(R.layout.table_dialog, null);
+        builder.setView(alertView);
+
+
+
+        TableLayout tableLayout = (TableLayout)alertView.findViewById(R.id.tableLayout);
+        for( String d : data){
+
+            String[] split = d.split(";");
+            String title = split[0];
+            String infoinfo = split[1];
+
+            TableRow tableRow = new TableRow(dialogContext);
+            tableRow.setPadding(10,10,10,10);
+            tableRow.setLayoutParams(new TableRow.LayoutParams
+                    (TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, 1.0f));
+
+            TextView textView1 = new TextView(dialogContext);
+            textView1.setPadding(15,15,15,15);
+           // textView1.setLayoutParams(new TableRow.LayoutParams
+           //         (TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, 1.0f));
+            textView1.setTextSize(18);
+            textView1.setText(title);
+            tableRow.addView(textView1);
+
+            TextView textView2 = new TextView(dialogContext);
+            textView2.setPadding(15,15,15,15);
+           // textView2.setLayoutParams(new TableRow.LayoutParams
+           //         (TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, 1.0f));
+            textView2.setTextSize(18);
+            textView2.setText(infoinfo);
+            textView2.setBackgroundResource(R.color.row2);
+            tableRow.addView(textView2);
+
+            tableLayout.addView(tableRow);
+        }
+
+        builder.setCancelable(true);
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    public void showTestChoice(){
+        final CharSequence[] charSequence = new CharSequence[] {"Storia di Esopo","Conta le parole", "Trova l'intruso"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Scegli il test cognitivo")
+                //.setMessage("You can buy our products without registration too. Enjoy the shopping")
+                .setSingleChoiceItems(charSequence, 0, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        System.out.println("Hai selezionato: "+charSequence);
+                    }
+                })
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //  manager.publish("si");
+                        dialog.dismiss();
+                    }
+                });
+        builder.create().show();
+    }
+
+    public void showTestChoice(String text){
+
+        String[] mainText = text.split(":");
+        String[] choices = mainText[1].split(",");
+        String title = mainText[2];
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title)
+                //.setMessage("You can buy our products without registration too. Enjoy the shopping")
+                .setSingleChoiceItems(choices, 0, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        System.out.println("Hai selezionato: "+which);
+                    }
+                })
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                      //  manager.publish("si");
+                        dialog.dismiss();
+                    }
+                });
+        builder.create().show();
+    }
+
+
+    @Override
+    public void onInit(int i) {
+
+
+        if(i == TextToSpeech.ERROR){
+            System.out.println("ERRORE !!");
+//            tts.setLanguage(Locale.ITALIAN);
+          //  tts.setPitch(1);
+        }
+        if (i == TextToSpeech.SUCCESS) {
+            //Setting speech Language
+            System.out.println("SUX !!");
+            tts.setLanguage(Locale.ITALIAN);
+            tts.setPitch(1);
+
+            tts.speak("Oggi è un bel giorno",TextToSpeech.QUEUE_FLUSH,null,null);
         }
     }
 }
