@@ -32,7 +32,7 @@ public class NotificationService  extends Service {
             Log.e(TAG, "onStartCommand");
             super.onStartCommand(intent, flags, startId);
 
-            startTimer();
+           // startTimer();
 
             return START_STICKY;
         }
@@ -76,6 +76,10 @@ public class NotificationService  extends Service {
                 timer.cancel();
                 timer = null;
             }
+        }
+
+        public void showNotification(String message){
+            Toast.makeText(NotificationService.this, "Notifica di Sanbot", Toast.LENGTH_LONG).show();
         }
 
         public void initializeTimerTask() {

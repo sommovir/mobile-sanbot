@@ -5,12 +5,18 @@ import java.util.List;
 
 public class EventManager {
 
-    public static EventManager _instance = null;
+    private boolean serverOnline = false;
+
+    private static EventManager _instance = null;
 
     private List<ConnectionEventListener> connectionEventListenerList = new LinkedList<>();
 
     private EventManager(){
 
+    }
+
+    public boolean isServerOnline() {
+        return serverOnline;
     }
 
     public static EventManager getInstance(){
@@ -25,12 +31,14 @@ public class EventManager {
     }
 
     public void serverOnline(){
+        this.serverOnline = true;
         for (ConnectionEventListener listener : connectionEventListenerList) {
             listener.serverOnline();
         }
     }
 
     public void serverOffline(){
+        this.serverOnline = false;
         for (ConnectionEventListener listener : connectionEventListenerList) {
             listener.serverOffline();
         }

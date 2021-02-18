@@ -1,6 +1,9 @@
 package it.cnr.mobilebot;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -9,20 +12,43 @@ import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.eclipse.paho.client.mqttv3.MqttPingSender;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+
+import java.util.Date;
+
+import it.cnr.mobilebot.logic.EventManager;
+import it.cnr.mobilebot.logic.MqttPingSenderL;
 
 /**
  * Created by Luca Coraci [luca.coraci@istc.cnr.it] on 18/06/2020.
  */
 public class MQTTManager {
 
-    String clientId = "user-110";//MqttClient.generateClientId();
+    private static final String clientId = generateClientId(); // "user-110";
     MqttAndroidClient client = null;
+    //MqttAsyncClient client = null;
     boolean test = false;
     private FaceActivity faceActivity = null;
+    private static Context context = null;
+    public static String ip = "192.168.43.112";
+
+    public void updateIP(String m_text) {
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                context.getString(R.string.ip_file), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(context.getString(R.string.IP_KEY), m_text);
+        editor.apply();
+        ip = m_text;
+        connect();
+    }
 
     public void setFaceActivity(FaceActivity faceActivity) {
         this.faceActivity = faceActivity;
@@ -30,14 +56,49 @@ public class MQTTManager {
 
     public MQTTManager(Context context){  //ws://server:port/mqtt      tcp://151.15.31.217:1883
         System.out.println("Costruttore MQTT..");
-        client = new MqttAndroidClient(context, "tcp://192.168.43.111:1883",
-                clientId);
+
+
+
+        this.context = context;
         System.out.println("Costruttore MQTT Costruito");
         if(test) return;
+            connect();
 
+
+    }
+
+    private static String generateClientId(){
+        return "id@"+(new Date().getTime());
+    }
+
+    public void setContext(Context context) {
+        this.context = context;
+    }
+
+    public void connect()  {
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                context.getString(R.string.ip_file), Context.MODE_PRIVATE);
+        if(sharedPref != null){
+            ip = sharedPref.getString(context.getString(R.string.IP_KEY), "not found");
+            System.out.println("SHARED IP: "+ip);
+        }
+
+        if(client != null){
+            client.close();
+        }
+
+        client = new MqttAndroidClient(context, "tcp://"+ip+":1883", clientId);
+        //MqttPingSender pingSender = new MqttPingSenderL(this);
+        //client = new MqttAsyncClient("tcp://"+ip+":1883", clientId, new MemoryPersistence(), pingSender);
         try {
             final int qos = 1;
-            IMqttToken token = client.connect();
+            MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
+            mqttConnectOptions.setCleanSession(true);
+            mqttConnectOptions.setAutomaticReconnect(true);
+            if(client.isConnected()){
+                return;
+            }
+            IMqttToken token = client.connect(mqttConnectOptions);
 
             token.setActionCallback(new IMqttActionListener() {
                 @Override
@@ -45,6 +106,7 @@ public class MQTTManager {
                     // We are connected
                     System.out.println("Client connesso!");
                     System.out.println("SUCCESSONE");
+                    EventManager.getInstance().serverOnline();
                     try {
                         client.subscribe("user/110/to_user/text",qos);
                         client.subscribe("user/110/to_user/face",qos);
@@ -62,6 +124,24 @@ public class MQTTManager {
                     // Something went wrong e.g. connection timeout or firewall problems
                     exception.printStackTrace();
                     System.out.println("FALLIMENTO TOTALE");
+                    EventManager.getInstance().serverOffline();
+
+                    Thread reconnectionThread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                                try {
+                                    Thread.sleep(10000);
+                                    connect();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+
+                        }
+                    });
+                    //FUNZIONAVA
+                    //reconnectionThread.start();
+
 
                 }
             });
@@ -70,9 +150,42 @@ public class MQTTManager {
 
 
 
-            client.setCallback(new MqttCallback() {
+            client.setCallback(new MqttCallbackExtended() {
+                @Override
+                public void connectComplete(boolean reconnect, String serverURI) {
+                    EventManager.getInstance().serverOnline();
+                    try {
+                        client.subscribe("user/110/to_user/text",qos);
+
+                    client.subscribe("user/110/to_user/face",qos);
+                    client.subscribe("user/110/to_user/command",qos);
+                    client.subscribe("user/110/to_user/table",qos);
+                    client.subscribe(Topics.RESPONSES.getTopic() +"/"+clientId,qos);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 @Override
                 public void connectionLost(Throwable cause) {
+                    System.out.println("Connection Lost");
+                    EventManager.getInstance().serverOffline();
+
+                    //FUNZIONAVA
+                    /*
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        public void run() {
+                            Toast.makeText(context, "reconnecting in 10 seconds", Toast.LENGTH_LONG).show();
+                            try {
+                                Thread.sleep(10000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            connect();
+                        }
+                    });
+                    */
+
 
                 }
 
@@ -105,7 +218,7 @@ public class MQTTManager {
                     }
                     if(topic.endsWith("table")){
                         String text = (new String(message.getPayload()));
-                        System.out.println("TEXT = "+ text);
+                        System.out.println("TABLE = "+ text);
                         String[] tabella = text.split("!");
                         faceActivity.showTableData(tabella);
                     }
@@ -126,6 +239,9 @@ public class MQTTManager {
                         if(text.equals("question")){
                             faceActivity.esprimiQualcheDubbio();
                         }
+                        if(text.equals("rage")){
+                            faceActivity.incazzati();
+                        }
                     }
 
                 }
@@ -143,7 +259,6 @@ public class MQTTManager {
             e.printStackTrace();
         }
     }
-
 
 
 

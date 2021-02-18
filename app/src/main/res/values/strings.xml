@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">mobilebot</string>
+    <string name="ip_file">serverdata</string>
+    <string name="IP_KEY">ip</string>
 </resources>
