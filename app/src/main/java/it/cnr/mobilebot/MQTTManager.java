@@ -99,6 +99,7 @@ public class MQTTManager {
         }
 
         if(client != null){
+
             client.close();
         }
 
