@@ -39,6 +39,8 @@ public class MQTTManager {
     private FaceActivity faceActivity = null;
     private static Context context = null;
     public static String ip = "192.168.43.112";
+    public MqttMessage lastMessage = null;
+    public String lastTopic = null;
 
     public void updateIP(String m_text) {
         SharedPreferences sharedPref = context.getSharedPreferences(
@@ -48,6 +50,12 @@ public class MQTTManager {
         editor.apply();
         ip = m_text;
         connect();
+    }
+
+    public void repeat(){
+        if(lastMessage != null){
+            parseMessage(lastTopic, lastMessage);
+        }
     }
 
     public void setFaceActivity(FaceActivity faceActivity) {
@@ -65,6 +73,13 @@ public class MQTTManager {
             connect();
 
 
+    }
+
+    public boolean isConnected(){
+        if(client == null){
+            return false;
+        }
+        return client.isConnected();
     }
 
     private static String generateClientId(){
@@ -192,57 +207,12 @@ public class MQTTManager {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
 
-                    System.out.println("TOPIC: "+topic);
-                    if(topic.equals(Topics.RESPONSES.getTopic() +"/"+clientId)){
-                        String text = (new String(message.getPayload()));
-                        System.out.println("TEXT = "+ text);
-                        faceActivity.speakText(null,text);
+                    if(!(new String(message.getPayload())).equals("repeat")) {
+                        lastMessage = message;
+                        lastTopic = topic;
+                    }
 
-                    }
-                    if(topic.endsWith("command")){
-                        String text = (new String(message.getPayload()));
-                        System.out.println("TEXT = "+ text);
-                        if(text.startsWith("multichoice")) {
-                            System.out.println("MULTI CHOICE");
-                            faceActivity.showTestChoice(text);
-                        }
-                        if(text.equals("video")) {
-                            faceActivity.showVideo();
-                        }
-                    }
-                    if(topic.endsWith("game1")){
-                        String text = (new String(message.getPayload()));
-                        System.out.println("TEXT = "+ text);
-                        String[] tabella = text.split("!");
-                        faceActivity.showTableData(tabella);
-                    }
-                    if(topic.endsWith("table")){
-                        String text = (new String(message.getPayload()));
-                        System.out.println("TABLE = "+ text);
-                        String[] tabella = text.split("!");
-                        faceActivity.showTableData(tabella);
-                    }
-                    if(topic.endsWith("face")){
-                        String text = (new String(message.getPayload()));
-                        if(text.equals("fun")){
-                            faceActivity.ilRisoAbbonda();
-                        }
-                        if(text.equals("love")){
-                            faceActivity.innamorati();
-                        }
-                        if(text.equals("sad")){
-                            faceActivity.intristiscitiAnimosamente();
-                        }
-                        if(text.equals("cry")){
-                            faceActivity.piangi();
-                        }
-                        if(text.equals("question")){
-                            faceActivity.esprimiQualcheDubbio();
-                        }
-                        if(text.equals("rage")){
-                            faceActivity.incazzati();
-                        }
-                    }
+                    parseMessage(topic,message);
 
                 }
 
@@ -257,6 +227,71 @@ public class MQTTManager {
 
         } catch (MqttException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    public void parseMessage(String topic, MqttMessage message){
+        System.out.println("TOPIC: "+topic);
+        if(topic.equals(Topics.RESPONSES.getTopic() +"/"+clientId)){
+            String text = (new String(message.getPayload()));
+            System.out.println("TEXT = "+ text);
+            faceActivity.speakText(null,text);
+
+        }
+        if(topic.endsWith("command")){
+            String text = (new String(message.getPayload()));
+            System.out.println("TEXT = "+ text);
+            if(text.startsWith("multichoice")) {
+                System.out.println("MULTI CHOICE");
+                faceActivity.showTestChoice(text);
+            }
+            if(text.equals("video")) {
+                faceActivity.showVideo();
+            }
+            if(text.equals("test image")) {
+                faceActivity.showImage();
+            }
+            if(text.equals("repeat")) {
+                repeat();
+            }
+            if(text.startsWith("test image ")) {
+
+                faceActivity.showImage(text.split(" ")[2]);
+            }
+        }
+        if(topic.endsWith("game1")){
+            String text = (new String(message.getPayload()));
+            System.out.println("TEXT = "+ text);
+            String[] tabella = text.split("!");
+            faceActivity.showTableData(tabella);
+        }
+        if(topic.endsWith("table")){
+            String text = (new String(message.getPayload()));
+            System.out.println("TABLE = "+ text);
+            String[] tabella = text.split("!");
+            faceActivity.showTableData(tabella);
+        }
+        if(topic.endsWith("face")){
+            String text = (new String(message.getPayload()));
+            if(text.equals("fun")){
+                faceActivity.ilRisoAbbonda();
+            }
+            if(text.equals("love")){
+                faceActivity.innamorati();
+            }
+            if(text.equals("sad")){
+                faceActivity.intristiscitiAnimosamente();
+            }
+            if(text.equals("cry")){
+                faceActivity.piangi();
+            }
+            if(text.equals("question")){
+                faceActivity.esprimiQualcheDubbio();
+            }
+            if(text.equals("rage")){
+                faceActivity.incazzati();
+            }
         }
     }
 

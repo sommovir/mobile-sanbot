@@ -6,6 +6,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -16,12 +19,14 @@ import android.os.Vibrator;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.text.InputType;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -34,12 +39,14 @@ import android.widget.VideoView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 import java.util.Locale;
 
+import at.markushi.ui.CircleButton;
 import it.cnr.mobilebot.logic.ConnectionEventListener;
 import it.cnr.mobilebot.logic.EventManager;
 
@@ -62,13 +69,17 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private String real_ip = null;
     TextToSpeech tts = null;
     Animation shake,tristi_contorno,ciglia_tremanti,cuoricino_SX,cuoricino_DX,cuoricino_SX_RED,cuoricino_DX_RED,cuoricino_contorno,
-            animation_cry_ciglia, animation_blackdown,animation_fast_fade, animation_fast_fade_inverted, shake_vertical,outrage_anim;
+            animation_cry_ciglia, animation_blackdown,animation_fast_fade, animation_fast_fade_inverted, shake_vertical,outrage_anim,
+            server_online_animazione;
 
     MQTTManager manager = null;
     MediaPlayer mp_ciglia =null;
+    MediaPlayer mp_button =null;
 
     Handler questionHandler = new Handler();
     Handler cryHandler = new Handler();
+
+    private TextView button_reconnect = null;
 
 
     private boolean bastaIndugi = false;
@@ -81,6 +92,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         mp_ciglia = MediaPlayer.create(FaceActivity.this, R.raw.ciglia);
+        mp_button = MediaPlayer.create(FaceActivity.this, R.raw.button_click);
         EventManager.getInstance().addConnectionEventListener(this);
 
         View decorView = getWindow().getDecorView();
@@ -101,7 +113,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
         decorView.setSystemUiVisibility(uiOptionsFull);
 
-
+        button_reconnect= findViewById(R.id.button_mainButton_reconnect);
 
         /*
         VideoDialog videoDialogFragment = (VideoDialog) getSupportFragmentManager()
@@ -154,6 +166,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         animation_fast_fade = AnimationUtils.loadAnimation(this,R.anim.fast_fade);
         animation_fast_fade_inverted = AnimationUtils.loadAnimation(this,R.anim.fast_fade_inverted);
         outrage_anim = AnimationUtils.loadAnimation(this,R.anim.outrage_anim);
+        server_online_animazione = AnimationUtils.loadAnimation(this,R.anim.connection_online);
 
 
 
@@ -167,6 +180,144 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         occhioDXView_OVER = findViewById(R.id.occhio_dx_OVER);
 
         connectionView = findViewById(R.id.imageView_ServerStatus);
+
+
+
+        button_reconnect.bringToFront();
+        button_reconnect.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                try {
+                    if (mp_button.isPlaying()) {
+                        mp_button.pause();
+                        mp_button.seekTo(0);
+                    } mp_button.start();
+                } catch(Exception e) { e.printStackTrace(); }
+
+                System.out.println("main button has been pressed");
+                Resources res = getApplicationContext().getResources();
+                final Drawable d1 = ResourcesCompat.getDrawable(res, R.drawable.reconnect, null);
+                final Drawable d2 = ResourcesCompat.getDrawable(res, R.drawable.reconnect_green, null);
+
+                TransitionDrawable transitionDrawable = new TransitionDrawable(new Drawable[]{d1,d2});
+                button_reconnect.setBackground(transitionDrawable);
+                transitionDrawable.startTransition(150);
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        TransitionDrawable transitionDrawable = new TransitionDrawable(new Drawable[]{d2,d1});
+                        button_reconnect.setBackground(transitionDrawable);
+                        transitionDrawable.startTransition(250);
+
+                    }
+                }, 150);
+
+                manager.connect();
+
+
+            }
+        });
+        button_reconnect.setVisibility(View.INVISIBLE);
+
+
+
+        final TextView button1 = findViewById(R.id.button_mainButton);
+        button1.bringToFront();
+        button1.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                try {
+                    if (mp_button.isPlaying()) {
+                        mp_button.pause();
+                        mp_button.seekTo(0);
+                    } mp_button.start();
+                } catch(Exception e) { e.printStackTrace(); }
+
+                System.out.println("main button has been pressed");
+                Resources res = getApplicationContext().getResources();
+                final Drawable d1 = ResourcesCompat.getDrawable(res, R.drawable.button_bar_start_setting, null);
+                final Drawable d2 = ResourcesCompat.getDrawable(res, R.drawable.button_bar_start_setting_c, null);
+
+                TransitionDrawable transitionDrawable = new TransitionDrawable(new Drawable[]{d1,d2});
+                button1.setBackground(transitionDrawable);
+                transitionDrawable.startTransition(150);
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        TransitionDrawable transitionDrawable = new TransitionDrawable(new Drawable[]{d2,d1});
+                        button1.setBackground(transitionDrawable);
+                        transitionDrawable.startTransition(250);
+
+                    }
+                }, 150);
+
+
+
+
+            }
+        });
+
+        final TextView button2 = findViewById(R.id.button_mainButton2);
+        button2.bringToFront();
+        button2.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                try {
+                    if (mp_button.isPlaying()) {
+                        mp_button.pause();
+                        mp_button.seekTo(0);
+                    } mp_button.start();
+                } catch(Exception e) { e.printStackTrace(); }
+
+                System.out.println("repeat button has been pressed");
+                Resources res = getApplicationContext().getResources();
+                final Drawable d1 = ResourcesCompat.getDrawable(res, R.drawable.button_bar_repeat_r, null);
+                final Drawable d2 = ResourcesCompat.getDrawable(res, R.drawable.button_bar_repeat_click_r, null);
+
+                TransitionDrawable transitionDrawable = new TransitionDrawable(new Drawable[]{d1,d2});
+                button2.setBackground(transitionDrawable);
+                transitionDrawable.startTransition(150);
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        TransitionDrawable transitionDrawable = new TransitionDrawable(new Drawable[]{d2,d1});
+                        button2.setBackground(transitionDrawable);
+                        transitionDrawable.startTransition(250);
+
+                    }
+                }, 150);
+
+
+
+                manager.repeat();
+            }
+        });
+
+        final TextView button3 = findViewById(R.id.button_mainButton3);
+        button3.bringToFront();
+        button3.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                Toast toast = Toast.makeText(getApplicationContext(),"Questa funzione non è al momento disponibile", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
+                toast.show();
+            }
+        });
+        final TextView button4 = findViewById(R.id.button_mainButton4);
+        button4.bringToFront();
+        button4.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Toast toast = Toast.makeText(getApplicationContext(),"Questa funzione non è al momento disponibile", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.TOP |Gravity.CENTER_VERTICAL, 0, 0);
+                toast.show();
+            }
+        });
+
 
 
         connectionView.setOnTouchListener(new View.OnTouchListener() {
@@ -242,6 +393,8 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 return false;
             }
         });
+
+
 
 
 
@@ -325,7 +478,12 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
         System.out.println("connecting MQTT.. ");
         manager = new MQTTManager(this.getApplicationContext());
+
         manager.setFaceActivity(this);
+        if(manager.isConnected()){
+            connectionView.setAnimation(server_online_animazione);
+            server_online_animazione.start();
+        }
 
 
 
@@ -689,6 +847,20 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         FaceActivity.this.startActivity(videoDialogIntent);
     }
 
+    public void showImage(){
+        ImageDisplayerDialog.externalURL = null;
+        Intent idd = new Intent(FaceActivity.this, ImageDisplayerDialog.class);
+        FaceActivity.this.startActivity(idd);
+
+    }
+
+    public void showImage(String url){
+        ImageDisplayerDialog.externalURL = url;
+        Intent idd = new Intent(FaceActivity.this, ImageDisplayerDialog.class);
+        FaceActivity.this.startActivity(idd);
+
+    }
+
 
     public void speakText(View v, String text) {
 
@@ -816,19 +988,29 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
     public void serverOnline() {
         ImageView img= (ImageView) findViewById(R.id.imageView_ServerStatus);
         img.setImageResource(R.drawable.green);
-        Toast.makeText(getApplicationContext(), "Server Online", Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), "Server Online", Toast.LENGTH_LONG).show();
+        Toast toast = Toast.makeText(getApplicationContext(),"Server Online", Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
         if(first){
             first = false;
         }else {
             tts.speak("Server online", TextToSpeech.QUEUE_FLUSH, null, null);
         }
+        button_reconnect.setVisibility(View.INVISIBLE);
+        img.setAnimation(server_online_animazione);
+        server_online_animazione.start();
+        System.out.println("animazio guggulazio");
+
     }
 
     @Override
     public void serverOffline() {
+        server_online_animazione.cancel();
         ImageView img= (ImageView) findViewById(R.id.imageView_ServerStatus);
         img.setImageResource(R.drawable.gdot_red_16);
-        Toast.makeText(getApplicationContext(), "Server Offline", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "Server Offline", Toast.LENGTH_SHORT).show();
         tts.speak("Server offline",TextToSpeech.QUEUE_FLUSH,null,null);
+        button_reconnect.setVisibility(View.VISIBLE);
     }
 }
