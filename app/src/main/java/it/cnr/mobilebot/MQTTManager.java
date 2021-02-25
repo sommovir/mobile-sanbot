@@ -22,6 +22,7 @@ import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttPingSender;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import it.cnr.mobilebot.logic.EventManager;
@@ -175,7 +176,8 @@ public class MQTTManager {
 
                     client.subscribe("user/110/to_user/face",qos);
                     client.subscribe("user/110/to_user/command",qos);
-                    client.subscribe("user/110/to_user/table",qos);
+                    client.subscribe("user/110/to_user/command/table",qos);
+                    client.subscribe("user/110/to_user/command/vtable",qos);
                     client.subscribe(Topics.RESPONSES.getTopic() +"/"+clientId,qos);
                     } catch (MqttException e) {
                         e.printStackTrace();
@@ -235,7 +237,7 @@ public class MQTTManager {
     public void parseMessage(String topic, MqttMessage message){
         System.out.println("TOPIC: "+topic);
         if(topic.equals(Topics.RESPONSES.getTopic() +"/"+clientId)){
-            String text = (new String(message.getPayload()));
+            String text = (new String(message.getPayload(),StandardCharsets.UTF_8));
             System.out.println("TEXT = "+ text);
             faceActivity.speakText(text);
 
@@ -260,19 +262,29 @@ public class MQTTManager {
 
                 faceActivity.showImage(text.split(" ")[2]);
             }
+
+        }
+        if(topic.endsWith("//table")){
+            String tabello = (new String(message.getPayload()));
+            System.out.println("TABLE = "+ tabello);
+            String[] tabella = tabello.split("!");
+            faceActivity.showTableData(tabella);
+        }
+        if(topic.endsWith("vtable")){
+            String tabello = (new String(message.getPayload()));
+            System.out.println("TABLE = "+ tabello);
+            String[] tabella = tabello.split("!");
+            faceActivity.showGenericTable(tabella);
         }
         if(topic.endsWith("game1")){
             String text = (new String(message.getPayload()));
             System.out.println("TEXT = "+ text);
             String[] tabella = text.split("!");
             faceActivity.showTableData(tabella);
+            //test table Laboraratorio di cucina;10:30!Laboratorio di Filatelia;19:00
         }
-        if(topic.endsWith("table")){
-            String text = (new String(message.getPayload()));
-            System.out.println("TABLE = "+ text);
-            String[] tabella = text.split("!");
-            faceActivity.showTableData(tabella);
-        }
+
+
         if(topic.endsWith("face")){
             String text = (new String(message.getPayload()));
             if(text.equals("fun")){
@@ -300,7 +312,7 @@ public class MQTTManager {
 
     public void publish(String text){
         //PUBLISH THE MESSAGE
-        MqttMessage message = new MqttMessage(text.getBytes());
+        MqttMessage message = new MqttMessage(text.getBytes(StandardCharsets.UTF_8));
         message.setQos(2);
         message.setRetained(false);
 

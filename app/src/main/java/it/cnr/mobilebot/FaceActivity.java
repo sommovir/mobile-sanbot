@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -44,7 +46,9 @@ import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import at.markushi.ui.CircleButton;
 import it.cnr.mobilebot.logic.ConnectionEventListener;
@@ -85,6 +89,8 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private boolean bastaIndugi = false;
 
     private String initialMessage = "Buonasera, benvenuto nella chat-bot dei laboratori di Televita! Come posso aiutarla?";
+
+    private Map<String,Boolean> colorCellMap = new HashMap<>();
 
 
     @Override
@@ -407,6 +413,11 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
 
 
+
+
+
+
+
         occhiView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
@@ -491,11 +502,14 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
             server_online_animazione.start();
         }
 
+
+
     }
 
     public void esprimiQualcheDubbio(){
         stopCry();
         bastaIndugi = false;
+
 
         occhiView.setImageResource(R.drawable.question_face_1);
         for (int i = 0; i < 5; i++) {
@@ -868,6 +882,74 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
     public void speakText(String text) {
 
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+
+    }
+
+    public void showGenericTable(String [] data){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        Context dialogContext = builder.getContext();
+        LayoutInflater inflater = LayoutInflater.from(dialogContext);
+        View alertView = inflater.inflate(R.layout.table_dialog, null);
+        builder.setView(alertView);
+        TableLayout tableLayout = (TableLayout)alertView.findViewById(R.id.tableLayout);
+        int row = 0;
+        for( String d : data){
+            String[] split = d.split(";");
+            TableRow tableRow = new TableRow(dialogContext);
+            tableRow.setPadding(3,3,3,3);
+            TableRow.LayoutParams layoutParams = new TableRow.LayoutParams
+                    (0, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
+            layoutParams.setMargins(3,3,3,3);
+            tableRow.setLayoutParams(layoutParams);
+
+            for (final String cella : split) {
+                final TextView textView1 = new TextView(dialogContext);
+                if(row == 0){
+                    textView1.setTypeface(null, Typeface.BOLD);
+                }else{
+                    GradientDrawable gd = new GradientDrawable(
+                          //  GradientDrawable.Orientation.TOP_BOTTOM,
+                           // new int[] {0xFFe5edef,0xFFcedde0});
+                    );
+                   // gd.setCornerRadius(6);
+                    gd.setColor(0xFFFFFFFF);
+                    gd.setStroke(1, 0xFF000000);
+                    textView1.setBackground(gd);
+                }
+                textView1.setPadding(5,5,5,5);
+                // textView1.setLayoutParams(new TableRow.LayoutParams
+                //         (TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, 1.0f));
+                textView1.setTextSize(18);
+                textView1.setText(cella);
+                colorCellMap.put(""+cella,Boolean.FALSE);
+                textView1.setOnClickListener(new View.OnClickListener() {
+                                                 @Override
+                                                 public void onClick(View v) {
+                                                     if(colorCellMap.get(""+cella)){
+                                                         System.out.println("TRUE");
+                                                         textView1.setBackgroundColor(0xFFFFFFFF);
+                                                         colorCellMap.put(""+cella,Boolean.FALSE);
+                                                     }else{
+                                                         System.out.println("FALSE");
+                                                         textView1.setBackgroundColor(0xFF00FF00);
+                                                         colorCellMap.put(""+cella,Boolean.TRUE);
+                                                     }
+
+                                                 }
+                                             }
+
+                );
+
+
+                tableRow.addView(textView1,layoutParams);
+
+            }
+            row++;
+            tableLayout.addView(tableRow);
+        }
+        builder.setCancelable(true);
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
 
     }
 
