@@ -237,7 +237,7 @@ public class MQTTManager {
         if(topic.equals(Topics.RESPONSES.getTopic() +"/"+clientId)){
             String text = (new String(message.getPayload()));
             System.out.println("TEXT = "+ text);
-            faceActivity.speakText(null,text);
+            faceActivity.speakText(text);
 
         }
         if(topic.endsWith("command")){

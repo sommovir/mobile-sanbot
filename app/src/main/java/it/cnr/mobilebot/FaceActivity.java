@@ -84,6 +84,8 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     private boolean bastaIndugi = false;
 
+    private String initialMessage = "Buonasera, benvenuto nella chat-bot dei laboratori di Televita! Come posso aiutarla?";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -261,6 +263,15 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
             }
         });
 
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                speakText(initialMessage);
+
+            }
+        }, 1000);
+
         final TextView button2 = findViewById(R.id.button_mainButton2);
         button2.bringToFront();
         button2.setOnClickListener(new View.OnClickListener() {
@@ -396,11 +407,6 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
 
 
-
-
-
-
-
         occhiView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
@@ -485,14 +491,11 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
             server_online_animazione.start();
         }
 
-
-
     }
 
     public void esprimiQualcheDubbio(){
         stopCry();
         bastaIndugi = false;
-
 
         occhiView.setImageResource(R.drawable.question_face_1);
         for (int i = 0; i < 5; i++) {
@@ -862,7 +865,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
     }
 
 
-    public void speakText(View v, String text) {
+    public void speakText(String text) {
 
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
 
