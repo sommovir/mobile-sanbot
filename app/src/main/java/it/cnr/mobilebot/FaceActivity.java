@@ -28,6 +28,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -118,8 +122,23 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
+/*
+
+        WebView webView = (WebView) findViewById(R.id.youtube);
+
+        if(webView == null){
+            System.out.println("MEGA NULLONE");
+        }
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+
+        webView.loadUrl("https://www.journaldev.com");
 
         decorView.setSystemUiVisibility(uiOptionsFull);
+        */
+
+        WebView webView = (WebView) findViewById(R.id.youtube);
+        webView.setVisibility(View.INVISIBLE);
 
         button_reconnect= findViewById(R.id.button_mainButton_reconnect);
 
@@ -857,6 +876,35 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 break;
             }
         }
+    }
+
+    public void showYouTubeVideo(String id){
+
+        Intent videoDialogIntent = new Intent(FaceActivity.this, YouTubeActivity.class);
+        FaceActivity.this.startActivity(videoDialogIntent);
+
+        /*
+        System.out.println("caricamento video di test: 2XKBGRryVDQ");
+        WebView youtubeWebView =  findViewById(R.id.youtube);
+        String myVideoYoutubeId = "2XKBGRryVDQ";
+
+        youtubeWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return false;
+            }
+        });
+
+        WebSettings webSettings = youtubeWebView.getSettings();
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setLoadWithOverviewMode(true);
+        webSettings.setUseWideViewPort(true);
+        youtubeWebView.setVisibility(View.VISIBLE);
+        youtubeWebView.loadUrl("https://www.youtube.com/embed/" + myVideoYoutubeId);
+
+         */
+
     }
 
     public void showVideo(){

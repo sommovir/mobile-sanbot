@@ -178,6 +178,7 @@ public class MQTTManager {
                     client.subscribe("user/110/to_user/command",qos);
                     client.subscribe("user/110/to_user/command/table",qos);
                     client.subscribe("user/110/to_user/command/vtable",qos);
+                        client.subscribe("user/110/to_user/command/youtube",qos);
                     client.subscribe(Topics.RESPONSES.getTopic() +"/"+clientId,qos);
                     } catch (MqttException e) {
                         e.printStackTrace();
@@ -269,6 +270,13 @@ public class MQTTManager {
             System.out.println("TABLE = "+ tabello);
             String[] tabella = tabello.split("!");
             faceActivity.showTableData(tabella);
+        }
+        if(topic.endsWith("youtube")){
+            System.out.println("richiesta test video youtube standard");
+            String m = new String(message.getPayload());
+            if(m.equals("test")) {
+                faceActivity.showYouTubeVideo("link farlocco");
+            }
         }
         if(topic.endsWith("vtable")){
             String tabello = (new String(message.getPayload()));
