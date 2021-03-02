@@ -24,6 +24,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.concurrent.ThreadLocalRandom;
 
 import it.cnr.mobilebot.logic.EventManager;
 import it.cnr.mobilebot.logic.MqttPingSenderL;
@@ -129,6 +130,11 @@ public class MQTTManager {
                         client.subscribe("user/110/to_user/face",qos);
                         client.subscribe("user/110/to_user/command",qos);
                         client.subscribe("user/110/to_user/table",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"face",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"table",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"youtube",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"link",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"img",qos);
                         client.subscribe(Topics.RESPONSES.getTopic() +"/"+clientId,qos);
                     } catch (MqttException e) {
                         e.printStackTrace();
@@ -176,7 +182,7 @@ public class MQTTManager {
 
                     client.subscribe("user/110/to_user/face",qos);
                     client.subscribe("user/110/to_user/command",qos);
-                    client.subscribe("user/110/to_user/command/table",qos);
+                    client.subscribe("user/110/to_user/table",qos);
                     client.subscribe("user/110/to_user/command/vtable",qos);
                         client.subscribe("user/110/to_user/command/youtube",qos);
                     client.subscribe(Topics.RESPONSES.getTopic() +"/"+clientId,qos);
@@ -234,16 +240,26 @@ public class MQTTManager {
         }
     }
 
+    public String parseMultiText(String multitext){
+        String[] tokens = multitext.split("%");
+        int nextInt = ThreadLocalRandom.current().nextInt(0, tokens.length);
+        return tokens[nextInt];
+    }
 
     public void parseMessage(String topic, MqttMessage message){
         System.out.println("TOPIC: "+topic);
         if(topic.equals(Topics.RESPONSES.getTopic() +"/"+clientId)){
             String text = (new String(message.getPayload(),StandardCharsets.UTF_8));
             System.out.println("TEXT = "+ text);
+
+            if(text.contains("%")){
+               text = parseMultiText(text);
+                System.out.println("Multi text detected: ["+text+"] is the chosen one");
+            }
             faceActivity.speakText(text);
 
         }
-        if(topic.endsWith("command")){
+        if(topic.endsWith("to_user/command")){
             String text = (new String(message.getPayload()));
             System.out.println("TEXT = "+ text);
             if(text.startsWith("multichoice")) {
@@ -265,26 +281,36 @@ public class MQTTManager {
             }
 
         }
-        if(topic.endsWith("//table")){
+        if(topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"img")){
+            String imglink = (new String(message.getPayload()));
+            faceActivity.showImage(imglink);
+        }
+        if(topic.endsWith("to_user/table")){
             String tabello = (new String(message.getPayload()));
             System.out.println("TABLE = "+ tabello);
             String[] tabella = tabello.split("!");
             faceActivity.showTableData(tabella);
         }
-        if(topic.endsWith("youtube")){
+        if(topic.endsWith("to_user/command/youtube")|| topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"youtube")){
             System.out.println("richiesta test video youtube standard");
-            String m = new String(message.getPayload());
+            String m = (new String(message.getPayload(),StandardCharsets.UTF_8));
             if(m.equals("test")) {
                 faceActivity.showYouTubeVideo("link farlocco");
+            }else{
+                System.out.println("sending real video to screen");
+                //https://youtu.be/BAVRCFQFeG4
+                String id  = m.split("\\.be/")[1];
+                System.out.println("youtube video id: "+id);
+                faceActivity.showYouTubeVideo(id);
             }
         }
-        if(topic.endsWith("vtable")){
+        if(topic.endsWith("to_user/command/vtable")|| topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"table")){
             String tabello = (new String(message.getPayload()));
             System.out.println("TABLE = "+ tabello);
             String[] tabella = tabello.split("!");
             faceActivity.showGenericTable(tabella);
         }
-        if(topic.endsWith("game1")){
+        if(topic.endsWith("to_user/command/game1")){
             String text = (new String(message.getPayload()));
             System.out.println("TEXT = "+ text);
             String[] tabella = text.split("!");
@@ -293,7 +319,7 @@ public class MQTTManager {
         }
 
 
-        if(topic.endsWith("face")){
+        if(topic.endsWith("to_user/face") || topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"face")){
             String text = (new String(message.getPayload()));
             if(text.equals("fun")){
                 faceActivity.ilRisoAbbonda();

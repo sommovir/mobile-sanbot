@@ -48,6 +48,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,6 +89,8 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
     Handler cryHandler = new Handler();
 
     private TextView button_reconnect = null;
+
+    private AlertDialog tableDialog = null;
 
 
     private boolean bastaIndugi = false;
@@ -137,8 +140,8 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         decorView.setSystemUiVisibility(uiOptionsFull);
         */
 
-        WebView webView = (WebView) findViewById(R.id.youtube);
-        webView.setVisibility(View.INVISIBLE);
+    //    WebView webView = (WebView) findViewById(R.id.youtube);
+      //  webView.setVisibility(View.INVISIBLE);
 
         button_reconnect= findViewById(R.id.button_mainButton_reconnect);
 
@@ -291,6 +294,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+
 
                 speakText(initialMessage);
 
@@ -505,11 +509,29 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     }
                 }, 200);
                 //occhiView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+
+
+
                 return false;
             }
         });
 
 
+
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                getApplicationContext().getString(R.string.ip_file), Context.MODE_PRIVATE);
+        if(sharedPref != null){
+            String name = sharedPref.getString(getApplicationContext().getString(R.string.NAME_KEY), null);
+            if(name == null){
+                System.out.println(" -- NOME NULLO");
+                speakText("Per favore dimmi il tuo nome");
+            }else {
+                System.out.println("MI CHIAMO: " + name);
+            }
+        }else{
+            System.out.println("ZERO FILE TROVATI");
+        }
     //MQTT PART
 
         System.out.println("connecting MQTT.. ");
@@ -880,8 +902,28 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     public void showYouTubeVideo(String id){
 
-        Intent videoDialogIntent = new Intent(FaceActivity.this, YouTubeActivity.class);
-        FaceActivity.this.startActivity(videoDialogIntent);
+        if(id.equals("link farlocco")) {
+            YouTubeActivity.id = null;
+            Intent videoDialogIntent = new Intent(FaceActivity.this, YouTubeActivity.class);
+            FaceActivity.this.startActivity(videoDialogIntent);
+        }else{
+            System.out.println("[YouTube Activity] playing video: "+id);
+            YouTubeActivity.id = id;
+            Intent videoDialogIntent = new Intent(FaceActivity.this, YouTubeActivity.class);
+            FaceActivity.this.startActivity(videoDialogIntent);
+
+            /*while(!YouTubeActivity.active){
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+             */
+           // System.out.println("LA MINCHIA ******************************************************");
+           // EventManager.getInstance().playYouTubeVideo(id);
+        }
 
         /*
         System.out.println("caricamento video di test: 2XKBGRryVDQ");
@@ -996,8 +1038,16 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
             tableLayout.addView(tableRow);
         }
         builder.setCancelable(true);
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
+        //AlertDialog alertDialog =
+        if(this.tableDialog != null){
+            this.tableDialog.cancel();
+            this.tableDialog.dismiss();
+            this.tableDialog = builder.create();
+        }else{
+            this.tableDialog = builder.create();
+        }
+
+        tableDialog.show();
 
     }
 
@@ -1046,8 +1096,17 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         }
 
         builder.setCancelable(true);
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
+        if(this.tableDialog != null){
+            this.tableDialog.cancel();
+            this.tableDialog.dismiss();
+            this.tableDialog = builder.create();
+        }else{
+            this.tableDialog = builder.create();
+        }
+
+        tableDialog.show();
+       // AlertDialog alertDialog = builder.create();
+      //  alertDialog.show();
     }
 
     public void showTestChoice(){
@@ -1073,7 +1132,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
     }
 
     public void showTestChoice(String text){
-
+    //example multichoice:tette,culo,figa:cosa ti piace di più ?
         String[] mainText = text.split(":");
         String[] choices = mainText[1].split(",");
         String title = mainText[2];
@@ -1144,6 +1203,6 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         img.setImageResource(R.drawable.gdot_red_16);
         Toast.makeText(getApplicationContext(), "Server Offline", Toast.LENGTH_SHORT).show();
         tts.speak("Server offline",TextToSpeech.QUEUE_FLUSH,null,null);
-        button_reconnect.setVisibility(View.VISIBLE);
+        button_reconnect.setVisibility(View.INVISIBLE);
     }
 }
