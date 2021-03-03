@@ -1172,7 +1172,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
             tts.setLanguage(Locale.ITALIAN);
             tts.setPitch(1);
 
-            tts.speak("Oggi è un bel giorno",TextToSpeech.QUEUE_FLUSH,null,null);
+           // tts.speak("Oggi è un bel giorno",TextToSpeech.QUEUE_FLUSH,null,null);
         }
     }
 
