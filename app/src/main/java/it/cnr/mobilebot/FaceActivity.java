@@ -984,7 +984,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         TableLayout tableLayout = (TableLayout)alertView.findViewById(R.id.tableLayout);
         int row = 0;
         for( String d : data){
-            String[] split = d.split(";");
+            String[] split = d.split("<CELL>");
             TableRow tableRow = new TableRow(dialogContext);
             tableRow.setPadding(3,3,3,3);
             TableRow.LayoutParams layoutParams = new TableRow.LayoutParams
@@ -1066,7 +1066,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         TableLayout tableLayout = (TableLayout)alertView.findViewById(R.id.tableLayout);
         for( String d : data){
 
-            String[] split = d.split(";");
+            String[] split = d.split("<CELL>");
             String title = split[0];
             String infoinfo = split[1];
 

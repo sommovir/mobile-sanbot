@@ -288,7 +288,7 @@ public class MQTTManager {
         if(topic.endsWith("to_user/table")){
             String tabello = (new String(message.getPayload()));
             System.out.println("TABLE = "+ tabello);
-            String[] tabella = tabello.split("!");
+            String[] tabella = tabello.split("<ROW>");
             faceActivity.showTableData(tabella);
         }
         if(topic.endsWith("to_user/command/youtube")|| topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"youtube")){
@@ -307,7 +307,7 @@ public class MQTTManager {
         if(topic.endsWith("to_user/command/vtable")|| topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"table")){
             String tabello = (new String(message.getPayload()));
             System.out.println("TABLE = "+ tabello);
-            String[] tabella = tabello.split("!");
+            String[] tabella = tabello.split("<ROW>");
             faceActivity.showGenericTable(tabella);
         }
         if(topic.endsWith("to_user/command/game1")){
