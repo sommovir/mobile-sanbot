@@ -1258,13 +1258,17 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         ImageView img= (ImageView) findViewById(R.id.imageView_ServerStatus);
         img.setImageResource(R.drawable.green);
         //Toast.makeText(getApplicationContext(), "Server Online", Toast.LENGTH_LONG).show();
-        Toast toast = Toast.makeText(getApplicationContext(),"Server Online", Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.CENTER, 0, 0);
-        toast.show();
+
         if(first){
             first = false;
+            Toast toast = Toast.makeText(getApplicationContext(),"Server Online", Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
         }else {
             if(isActivityVisible()) {
+                Toast toast = Toast.makeText(getApplicationContext(),"Server Online", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
                 tts.speak("Server online", TextToSpeech.QUEUE_FLUSH, null, null);
             }
         }
@@ -1280,8 +1284,9 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         server_online_animazione.cancel();
         ImageView img= (ImageView) findViewById(R.id.imageView_ServerStatus);
         img.setImageResource(R.drawable.gdot_red_16);
-        Toast.makeText(getApplicationContext(), "Server Offline", Toast.LENGTH_SHORT).show();
+
         if(isActivityVisible()) {
+            Toast.makeText(getApplicationContext(), "Server Offline", Toast.LENGTH_SHORT).show();
             tts.speak("Server offline", TextToSpeech.QUEUE_FLUSH, null, null);
         }
         button_reconnect.setVisibility(View.INVISIBLE);
