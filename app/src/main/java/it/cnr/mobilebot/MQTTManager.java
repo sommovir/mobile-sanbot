@@ -183,8 +183,9 @@ public class MQTTManager {
                     client.subscribe("user/110/to_user/face",qos);
                     client.subscribe("user/110/to_user/command",qos);
                     client.subscribe("user/110/to_user/table",qos);
+                    client.subscribe("user/110/to_user/link",qos);
                     client.subscribe("user/110/to_user/command/vtable",qos);
-                        client.subscribe("user/110/to_user/command/youtube",qos);
+                    client.subscribe("user/110/to_user/command/youtube",qos);
                     client.subscribe(Topics.RESPONSES.getTopic() +"/"+clientId,qos);
                     } catch (MqttException e) {
                         e.printStackTrace();
@@ -284,6 +285,11 @@ public class MQTTManager {
         if(topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"img")){
             String imglink = (new String(message.getPayload()));
             faceActivity.showImage(imglink);
+        }
+        if(topic.endsWith("to_user/link") || topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"link")){
+            String link = (new String(message.getPayload()));
+            System.out.println("Link da mostrare: "+link);
+            faceActivity.showLink(link);
         }
         if(topic.endsWith("to_user/table")){
             String tabello = (new String(message.getPayload()));

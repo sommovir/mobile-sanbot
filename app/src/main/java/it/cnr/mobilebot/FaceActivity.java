@@ -7,10 +7,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.TransitionDrawable;
+import android.hardware.display.DisplayManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -21,6 +23,9 @@ import android.os.Vibrator;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.text.InputType;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -90,6 +95,8 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     private TextView button_reconnect = null;
 
+    private static boolean activityVisible;
+
     private AlertDialog tableDialog = null;
 
 
@@ -99,6 +106,30 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     private Map<String,Boolean> colorCellMap = new HashMap<>();
 
+
+    public static boolean isActivityVisible() {
+        return activityVisible;
+    }
+
+    public static void activityResumed() {
+        activityVisible = true;
+    }
+
+    public static void activityPaused() {
+        activityVisible = false;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        FaceActivity.activityResumed();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        FaceActivity.activityPaused();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -968,10 +999,54 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     }
 
+    public boolean isScreenOff(){
+        DisplayManager dm = (DisplayManager)
+                getApplicationContext().getSystemService(Context.DISPLAY_SERVICE);
+        for (Display display : dm.getDisplays()) {
+            if (display.getState() != Display.STATE_OFF) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public void speakText(String text) {
 
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+
+    }
+
+    public void showLink(String link){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        Context dialogContext = builder.getContext();
+        LayoutInflater inflater = LayoutInflater.from(dialogContext);
+        View alertView = inflater.inflate(R.layout.table_dialog, null);
+        builder.setView(alertView);
+        TableLayout tableLayout = (TableLayout)alertView.findViewById(R.id.tableLayout);
+        TableRow tableRow = new TableRow(dialogContext);
+        tableRow.setPadding(3,3,3,3);
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams
+                (0, TableRow.LayoutParams.WRAP_CONTENT, 1.0f);
+        layoutParams.setMargins(30,30,30,30);
+        tableRow.setLayoutParams(layoutParams);
+
+        final TextView textView1 = new TextView(dialogContext);
+        textView1.setTextSize(20);
+        textView1.setText(link);
+        textView1.setLinkTextColor(Color.parseColor("#2f6699"));
+      //  textView1.setMovementMethod(LinkMovementMethod.getInstance());
+        Linkify.addLinks(textView1, Linkify.ALL);
+        tableRow.addView(textView1,layoutParams);
+        tableLayout.addView(tableRow);
+        if(this.tableDialog != null){
+            this.tableDialog.cancel();
+            this.tableDialog.dismiss();
+            this.tableDialog = builder.create();
+        }else{
+            this.tableDialog = builder.create();
+        }
+
+        tableDialog.show();
 
     }
 
@@ -1012,23 +1087,25 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 textView1.setTextSize(18);
                 textView1.setText(cella);
                 colorCellMap.put(""+cella,Boolean.FALSE);
-                textView1.setOnClickListener(new View.OnClickListener() {
-                                                 @Override
-                                                 public void onClick(View v) {
-                                                     if(colorCellMap.get(""+cella)){
-                                                         System.out.println("TRUE");
-                                                         textView1.setBackgroundColor(0xFFFFFFFF);
-                                                         colorCellMap.put(""+cella,Boolean.FALSE);
-                                                     }else{
-                                                         System.out.println("FALSE");
-                                                         textView1.setBackgroundColor(0xFF00FF00);
-                                                         colorCellMap.put(""+cella,Boolean.TRUE);
+                if(row != 0) {
+                    textView1.setOnClickListener(new View.OnClickListener() {
+                                                     @Override
+                                                     public void onClick(View v) {
+                                                         if (colorCellMap.get("" + cella)) {
+                                                             System.out.println("TRUE");
+                                                             textView1.setBackgroundColor(0xFFFFFFFF);
+                                                             colorCellMap.put("" + cella, Boolean.FALSE);
+                                                         } else {
+                                                             System.out.println("FALSE");
+                                                             textView1.setBackgroundColor(0xFF00FF00);
+                                                             colorCellMap.put("" + cella, Boolean.TRUE);
+                                                         }
+
                                                      }
-
                                                  }
-                                             }
 
-                );
+                    );
+                }
 
 
                 tableRow.addView(textView1,layoutParams);
@@ -1187,7 +1264,9 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         if(first){
             first = false;
         }else {
-            tts.speak("Server online", TextToSpeech.QUEUE_FLUSH, null, null);
+            if(isActivityVisible()) {
+                tts.speak("Server online", TextToSpeech.QUEUE_FLUSH, null, null);
+            }
         }
         button_reconnect.setVisibility(View.INVISIBLE);
         img.setAnimation(server_online_animazione);
@@ -1202,7 +1281,9 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         ImageView img= (ImageView) findViewById(R.id.imageView_ServerStatus);
         img.setImageResource(R.drawable.gdot_red_16);
         Toast.makeText(getApplicationContext(), "Server Offline", Toast.LENGTH_SHORT).show();
-        tts.speak("Server offline",TextToSpeech.QUEUE_FLUSH,null,null);
+        if(isActivityVisible()) {
+            tts.speak("Server offline", TextToSpeech.QUEUE_FLUSH, null, null);
+        }
         button_reconnect.setVisibility(View.INVISIBLE);
     }
 }
