@@ -705,6 +705,11 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
         //ViewCompat.setTranslationZ(sopraccigliaView,3);
 
+        final TextView button1 = findViewById(R.id.button_mainButton);
+        final TextView button2 = findViewById(R.id.button_mainButton2);
+        final TextView button3 = findViewById(R.id.button_mainButton3);
+        final TextView button4 = findViewById(R.id.button_mainButton4);
+
         float sopraccigliaZ =  ViewCompat.getTranslationZ(sopraccigliaView);
         System.out.println("SOPRACCIGLIA Z = "+sopraccigliaZ);
 
@@ -714,6 +719,10 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         float palliniViewZ =  ViewCompat.getTranslationZ(palliniView);
         System.out.println("palliniViewZ Z = "+palliniViewZ);
 
+        ViewCompat.setTranslationZ(button1,5);
+        ViewCompat.setTranslationZ(button2,5);
+        ViewCompat.setTranslationZ(button3,5);
+        ViewCompat.setTranslationZ(button4,5);
         ViewCompat.setTranslationZ(contorno_occhiView,4);
         ViewCompat.setTranslationZ(sopraccigliaView,3);
         ViewCompat.setTranslationZ(palliniView,2);

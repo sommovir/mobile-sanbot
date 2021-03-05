@@ -176,7 +176,7 @@ public class MQTTManager {
             client.setCallback(new MqttCallbackExtended() {
                 @Override
                 public void connectComplete(boolean reconnect, String serverURI) {
-                    //EventManager.getInstance().serverOnline();
+                    EventManager.getInstance().serverOnline();
                     try {
                         client.subscribe("user/110/to_user/text",qos);
 
