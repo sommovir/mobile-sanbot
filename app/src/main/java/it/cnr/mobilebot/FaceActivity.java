@@ -1,5 +1,6 @@
 package it.cnr.mobilebot;
 
+import android.app.ActionBar;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -22,10 +23,14 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.text.InputType;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
+import android.util.Log;
 import android.view.Display;
+import android.view.DragEvent;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -51,11 +56,13 @@ import android.widget.VideoView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -64,7 +71,7 @@ import at.markushi.ui.CircleButton;
 import it.cnr.mobilebot.logic.ConnectionEventListener;
 import it.cnr.mobilebot.logic.EventManager;
 
-public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, ConnectionEventListener {
+public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, ConnectionEventListener, GestureDetector.OnGestureListener {
 
 
     private boolean stopme = false;
@@ -79,12 +86,17 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private ImageView occhioSXView_OVER;
     private ImageView occhioDXView_OVER;
     private ImageView connectionView;
-    private boolean first = true;
+    private ImageView aloneInTheBlue, aloneInTheGreen, aloneInTheRed, vetroRotto;
+    private int first = 0;
     private String real_ip = null;
+    private int blinkCounter = 0;
     TextToSpeech tts = null;
+    private static final int SWIPE_THRESHOLD = 100;
+    private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
     Animation shake,tristi_contorno,ciglia_tremanti,cuoricino_SX,cuoricino_DX,cuoricino_SX_RED,cuoricino_DX_RED,cuoricino_contorno,
             animation_cry_ciglia, animation_blackdown,animation_fast_fade, animation_fast_fade_inverted, shake_vertical,outrage_anim,
-            server_online_animazione;
+            server_online_animazione, vetro_riparante, animation_while_speak;
 
     MQTTManager manager = null;
     MediaPlayer mp_ciglia =null;
@@ -92,19 +104,22 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     Handler questionHandler = new Handler();
     Handler cryHandler = new Handler();
+    Handler handlerBlinker = new Handler();
 
     private TextView button_reconnect = null;
 
     private static boolean activityVisible;
 
     private AlertDialog tableDialog = null;
-
+    private GestureDetectorCompat mDetector;
 
     private boolean bastaIndugi = false;
 
     private String initialMessage = "Buonasera, benvenuto nella chat-bot dei laboratori di Televita! Come posso aiutarla?";
 
     private Map<String,Boolean> colorCellMap = new HashMap<>();
+    private boolean vetroSpaccato = false;
+    private boolean down = false;
 
 
     public static boolean isActivityVisible() {
@@ -140,6 +155,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         mp_ciglia = MediaPlayer.create(FaceActivity.this, R.raw.ciglia);
         mp_button = MediaPlayer.create(FaceActivity.this, R.raw.button_click);
         EventManager.getInstance().addConnectionEventListener(this);
+        mDetector = new GestureDetectorCompat(getApplicationContext(),this);
 
         View decorView = getWindow().getDecorView();
 // Hide both the navigation bar and the status bar.
@@ -170,6 +186,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
         decorView.setSystemUiVisibility(uiOptionsFull);
         */
+        decorView.setSystemUiVisibility(uiOptionsFull);
 
     //    WebView webView = (WebView) findViewById(R.id.youtube);
       //  webView.setVisibility(View.INVISIBLE);
@@ -228,6 +245,8 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         animation_fast_fade_inverted = AnimationUtils.loadAnimation(this,R.anim.fast_fade_inverted);
         outrage_anim = AnimationUtils.loadAnimation(this,R.anim.outrage_anim);
         server_online_animazione = AnimationUtils.loadAnimation(this,R.anim.connection_online);
+        vetro_riparante = AnimationUtils.loadAnimation(this,R.anim.vetrospaccato_fade);
+        animation_while_speak = AnimationUtils.loadAnimation(this,R.anim.audio_output);
 
 
 
@@ -240,8 +259,17 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         occhioSXView_OVER = findViewById(R.id.occhio_sx_OVER);
         occhioDXView_OVER = findViewById(R.id.occhio_dx_OVER);
 
-        connectionView = findViewById(R.id.imageView_ServerStatus);
+        aloneInTheBlue = findViewById(R.id.outsideBlue);
+        aloneInTheGreen= findViewById(R.id.outsideGreen);
+        aloneInTheRed = findViewById(R.id.outsideRed);
+        vetroRotto = findViewById(R.id.broken);
 
+        aloneInTheBlue.setVisibility(View.INVISIBLE);
+        aloneInTheGreen.setVisibility(View.INVISIBLE);
+        aloneInTheRed.setVisibility(View.INVISIBLE);
+        vetroRotto.setVisibility(View.INVISIBLE);
+
+        connectionView = findViewById(R.id.imageView_ServerStatus);
 
 
         button_reconnect.bringToFront();
@@ -390,6 +418,10 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         });
 
 
+        checkBlink();
+
+
+
 
         connectionView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -496,6 +528,18 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
             }
         });
 
+
+        occhiView.setOnDragListener(new View.OnDragListener() {
+            @Override
+            public boolean onDrag(View v, DragEvent event) {
+                System.out.println("DRAGGHING: "+event.toString());
+                return true;
+            }
+        });
+
+
+
+
         occhiView.setOnTouchListener(new View.OnTouchListener() {
 
 
@@ -503,20 +547,59 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
             public boolean onTouch(View v, MotionEvent event) {
 
 
+               // System.out.println("EVEMTO: "+event.toString());
+
+                if((event.getAction() == (MotionEvent.ACTION_MOVE  )&& down)) {
+                    System.out.println("DRAGHI MARIO");
+                    down = false;
+                    if(tts.isSpeaking()){
+                        speakText("Muuta sono");
+                    }
+                }
 
 
-
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                else if(event.getAction() == MotionEvent.ACTION_DOWN) {
                     //lastDown = System.currentTimeMillis();
+                    down = true;
 
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                    // lastDuration = System.currentTimeMillis() - lastDown;
+                    down = false;
+
+
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            occhiView.setImageResource(R.drawable.occhi_aperti);
+                            blinkCounter++;
+                            if(blinkCounter >= 5 && !vetroSpaccato){
+                                vetroSpaccato = true;
+                                vetroRotto.setVisibility(View.VISIBLE);
+                                vetroRotto.bringToFront();
+                                vetroRotto.setAnimation(vetro_riparante);
+                                vetro_riparante.start();
+                                speakText("Hey, vacci piano.");
+                                handlerBlinker.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        blinkCounter = 0;
+                                        vetroSpaccato = false;
+                                        vetroRotto.setVisibility(View.INVISIBLE);
+
+                                    }
+                                }, 7000);
+                            }
+                        }
+                    }, 200);
+
                     try {
                         if (mp_ciglia.isPlaying()) {
                             mp_ciglia.pause();
                             mp_ciglia.seekTo(0);
                         } mp_ciglia.start();
                     } catch(Exception e) { e.printStackTrace(); }
+
+
                 }
 
 
@@ -532,13 +615,6 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 stopCry();
                 occhiView.setImageResource(R.drawable.occhi_chiusi);
 
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                   public void run() {
-                        occhiView.setImageResource(R.drawable.occhi_aperti);
-
-                    }
-                }, 200);
                 //occhiView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
 
@@ -576,6 +652,26 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
 
 
+    }
+
+    private void checkBlink(){
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                    if(blinkCounter != 0){
+                        blinkCounter --;
+                    }
+                    handlerBlinker.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            checkBlink();
+
+                        }
+                    }, 1000);
+
+            }
+        }, 1000);
     }
 
     public void esprimiQualcheDubbio(){
@@ -1021,7 +1117,11 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     public void speakText(String text) {
 
-        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+        Bundle params = new Bundle();
+        params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "");
+
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, params, "UniqueID"+new Date().getTime());
+
 
     }
 
@@ -1242,6 +1342,28 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         builder.create().show();
     }
 
+    public void animationWhileSpeaking(){
+     //   Handler h = new Handler();
+    //    h.postDelayed(new Runnable() {
+      //      @Override
+     //       public void run() {
+
+        runOnUiThread(new Runnable() {
+            public void run() {
+                Log.i("TextToSpeech","On Start");
+                System.out.println("STARTONE");
+                aloneInTheBlue.setAnimation(animation_while_speak);
+                aloneInTheBlue.setVisibility(View.GONE);
+                aloneInTheBlue.setVisibility(View.VISIBLE);
+                aloneInTheRed.setVisibility(View.INVISIBLE);
+                aloneInTheGreen.setVisibility(View.INVISIBLE);
+
+                animation_while_speak.start();
+                aloneInTheBlue.invalidate();
+                aloneInTheBlue.requestLayout();
+           }
+       });
+    }
 
     @Override
     public void onInit(int i) {
@@ -1257,9 +1379,46 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
             System.out.println("SUX !!");
             tts.setLanguage(Locale.ITALIAN);
             tts.setPitch(1);
+            tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                @Override
+                public void onStart(String utteranceId) {
+                    animationWhileSpeaking();
+
+
+
+                }
+
+                @Override
+                public void onDone(String utteranceId) {
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            Log.i("TextToSpeech","On Done");
+                            animation_while_speak.cancel();
+                            aloneInTheBlue.clearAnimation();
+                            aloneInTheRed.clearAnimation();
+                            aloneInTheGreen.clearAnimation();
+                            aloneInTheBlue.setVisibility(View.INVISIBLE);
+                            aloneInTheRed.setVisibility(View.INVISIBLE);
+                            aloneInTheGreen.setVisibility(View.INVISIBLE);
+                    aloneInTheBlue.invalidate();
+                    aloneInTheBlue.requestLayout();}});
+
+
+
+                }
+
+                @Override
+                public void onError(String utteranceId) {
+                    Log.i("TextToSpeech","On Error");
+                    aloneInTheBlue.setVisibility(View.INVISIBLE);
+                    aloneInTheRed.setVisibility(View.VISIBLE);
+                    aloneInTheGreen.setVisibility(View.INVISIBLE);
+                }
+            });
 
            // tts.speak("Oggi è un bel giorno",TextToSpeech.QUEUE_FLUSH,null,null);
         }
+
     }
 
     @Override
@@ -1268,8 +1427,8 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         img.setImageResource(R.drawable.green);
         //Toast.makeText(getApplicationContext(), "Server Online", Toast.LENGTH_LONG).show();
 
-        if(first){
-            first = false;
+        if(first < 2){
+            first++;
             Toast toast = Toast.makeText(getApplicationContext(),"Server Online", Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
             toast.show();
@@ -1278,10 +1437,11 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 Toast toast = Toast.makeText(getApplicationContext(),"Server Online", Toast.LENGTH_SHORT);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
-                tts.speak("Server online", TextToSpeech.QUEUE_FLUSH, null, null);
+                speakText("Server online");
             }
         }
         button_reconnect.setVisibility(View.INVISIBLE);
+       // vetroRotto.setVisibility(View.INVISIBLE);
         img.setAnimation(server_online_animazione);
         server_online_animazione.start();
         System.out.println("animazio guggulazio");
@@ -1296,8 +1456,46 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
         if(isActivityVisible()) {
             Toast.makeText(getApplicationContext(), "Server Offline", Toast.LENGTH_SHORT).show();
-            tts.speak("Server offline", TextToSpeech.QUEUE_FLUSH, null, null);
+            speakText("Server offline");
+
         }
+        //vetroRotto.setVisibility(View.VISIBLE);
         button_reconnect.setVisibility(View.INVISIBLE);
+    }
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        System.out.println("DOWN");
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent e) {
+        System.out.println("SHOW PRESS");
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        System.out.println("SCROLL");
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        System.out.println("CIAO");
+        if(tts != null) {
+            speakText("muuuta sono");
+        }
+        return true;
     }
 }
