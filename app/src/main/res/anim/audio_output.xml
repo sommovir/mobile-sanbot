@@ -23,7 +23,7 @@
         android:toAlpha="0.0"
         android:duration="1000"
         android:startOffset="1500"
-        android:repeatCount="3"
+        android:repeatCount="5"
         android:repeatMode="reverse"
         android:interpolator="@android:anim/linear_interpolator"
         />

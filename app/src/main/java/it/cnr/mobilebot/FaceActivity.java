@@ -1,12 +1,15 @@
 package it.cnr.mobilebot;
 
+import android.Manifest;
 import android.app.ActionBar;
+import android.app.FragmentManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -21,7 +24,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.text.InputType;
@@ -61,15 +66,22 @@ import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 
+import com.vikramezhil.droidspeech.DroidSpeech;
+import com.vikramezhil.droidspeech.OnDSListener;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import at.markushi.ui.CircleButton;
 import it.cnr.mobilebot.logic.ConnectionEventListener;
 import it.cnr.mobilebot.logic.EventManager;
+
+import static android.speech.SpeechRecognizer.RESULTS_RECOGNITION;
 
 public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, ConnectionEventListener, GestureDetector.OnGestureListener {
 
@@ -91,12 +103,13 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private String real_ip = null;
     private int blinkCounter = 0;
     TextToSpeech tts = null;
+    private Date dragTime = null;
     private static final int SWIPE_THRESHOLD = 100;
     private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 
     Animation shake,tristi_contorno,ciglia_tremanti,cuoricino_SX,cuoricino_DX,cuoricino_SX_RED,cuoricino_DX_RED,cuoricino_contorno,
             animation_cry_ciglia, animation_blackdown,animation_fast_fade, animation_fast_fade_inverted, shake_vertical,outrage_anim,
-            server_online_animazione, vetro_riparante, animation_while_speak;
+            server_online_animazione, vetro_riparante, animation_while_speak, animation_while_input;
 
     MQTTManager manager = null;
     MediaPlayer mp_ciglia =null;
@@ -120,6 +133,9 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private Map<String,Boolean> colorCellMap = new HashMap<>();
     private boolean vetroSpaccato = false;
     private boolean down = false;
+
+    private SpeechRecognizer mSpeechRecognizer;
+    private Intent mSpeechRecognizerIntent;
 
 
     public static boolean isActivityVisible() {
@@ -156,6 +172,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         mp_button = MediaPlayer.create(FaceActivity.this, R.raw.button_click);
         EventManager.getInstance().addConnectionEventListener(this);
         mDetector = new GestureDetectorCompat(getApplicationContext(),this);
+        requestRecordAudioPermission();
 
         View decorView = getWindow().getDecorView();
 // Hide both the navigation bar and the status bar.
@@ -247,6 +264,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         server_online_animazione = AnimationUtils.loadAnimation(this,R.anim.connection_online);
         vetro_riparante = AnimationUtils.loadAnimation(this,R.anim.vetrospaccato_fade);
         animation_while_speak = AnimationUtils.loadAnimation(this,R.anim.audio_output);
+        animation_while_input = AnimationUtils.loadAnimation(this,R.anim.audio_input);
 
 
 
@@ -316,7 +334,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         button1.bringToFront();
         button1.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
+                listen();
                 try {
                     if (mp_button.isPlaying()) {
                         mp_button.pause();
@@ -347,8 +365,10 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
 
 
+
             }
         });
+
 
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -550,11 +570,19 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                // System.out.println("EVEMTO: "+event.toString());
 
                 if((event.getAction() == (MotionEvent.ACTION_MOVE  )&& down)) {
-                    System.out.println("DRAGHI MARIO");
-                    down = false;
-                    if(tts.isSpeaking()){
-                        speakText("Muuta sono");
+                    if(dragTime == null){
+                        dragTime = new Date();
+                    }else{
+                        if( new Date().getTime()-dragTime.getTime() > 600){
+                            System.out.println("DRAGHI MARIO");
+                            down = false;
+                            dragTime = null;
+                            if(tts.isSpeaking()){
+                                speakText("ok mi fermo");
+                            }
+                        }
                     }
+
                 }
 
 
@@ -652,6 +680,24 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
 
 
+    }
+
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            View decorView = getWindow().getDecorView();
+            int uiOptionsFull = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+            decorView.setSystemUiVisibility(uiOptionsFull);
+
+        }
     }
 
     private void checkBlink(){
@@ -1365,6 +1411,29 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
        });
     }
 
+    public void animationWhileInput(){
+        //   Handler h = new Handler();
+        //    h.postDelayed(new Runnable() {
+        //      @Override
+        //       public void run() {
+
+        runOnUiThread(new Runnable() {
+            public void run() {
+                Log.i("TextToSpeech","On Start");
+                System.out.println("STARTONE");
+                aloneInTheGreen.setAnimation(animation_while_input);
+                aloneInTheGreen.setVisibility(View.GONE);
+                aloneInTheGreen.setVisibility(View.VISIBLE);
+                aloneInTheRed.setVisibility(View.INVISIBLE);
+                aloneInTheBlue.setVisibility(View.INVISIBLE);
+
+                animation_while_input.start();
+                aloneInTheGreen.invalidate();
+                aloneInTheGreen.requestLayout();
+            }
+        });
+    }
+
     @Override
     public void onInit(int i) {
 
@@ -1497,5 +1566,203 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
             speakText("muuuta sono");
         }
         return true;
+    }
+
+
+    public void listenBROKEN(){
+        /*
+        DroidSpeech droidSpeech = new DroidSpeech(this, getFragmentManager());
+        droidSpeech.setContinuousSpeechRecognition(true);
+        droidSpeech.setOnDroidSpeechListener(new OnDSListener() {
+            @Override
+            public void onDroidSpeechSupportedLanguages(String currentSpeechLanguage, List<String> supportedSpeechLanguages) {
+                System.out.println("CURRENT SPEECH: "+currentSpeechLanguage);
+                for(String esse: supportedSpeechLanguages){
+                    System.out.println("L: "+esse);
+                }
+            }
+
+            @Override
+            public void onDroidSpeechRmsChanged(float rmsChangedValue) {
+
+            }
+
+            @Override
+            public void onDroidSpeechLiveResult(String liveSpeechResult) {
+                System.out.println("LIVE: "+liveSpeechResult);
+            }
+
+            @Override
+            public void onDroidSpeechFinalResult(String finalSpeechResult) {
+                System.out.println("RESULT: "+finalSpeechResult);
+            }
+
+            @Override
+            public void onDroidSpeechClosedByUser() {
+                System.out.println("CLOSED");
+            }
+
+            @Override
+            public void onDroidSpeechError(String errorMsg) {
+
+            }
+        });
+        droidSpeech.startDroidSpeechRecognition();
+
+         */
+
+    }
+    private void requestRecordAudioPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            String requiredPermission = Manifest.permission.RECORD_AUDIO;
+
+            // If the user previously denied this permission then show a message explaining why
+            // this permission is needed
+            if (checkCallingOrSelfPermission(requiredPermission) == PackageManager.PERMISSION_DENIED) {
+                requestPermissions(new String[]{requiredPermission}, 101);
+            }
+        }
+    }
+
+    public void listen(){
+        System.out.println("LISTEN ME");
+        if(mSpeechRecognizer == null) {
+
+            mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+
+        }
+        mSpeechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,
+                this.getPackageName());
+        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5);
+
+        //wordsList = (ListView) findViewById(R.id.listView1);
+
+
+
+        mSpeechRecognizer.setRecognitionListener(new RecognitionListener() {
+
+            @Override
+            public void onBeginningOfSpeech() {
+                System.out.println("BEGIN SPEECH");
+                Toast toast = Toast.makeText(getApplicationContext(),"speech begin", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
+                toast.show();
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onBufferReceived(byte[] arg0) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onEndOfSpeech() {
+                Toast toast = Toast.makeText(getApplicationContext(),"end of speech", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
+                toast.show();
+                System.out.println("END END");
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        Log.i("TextToSpeech","On Done");
+                        animation_while_input.cancel();
+                        aloneInTheBlue.clearAnimation();
+                        aloneInTheRed.clearAnimation();
+                        aloneInTheGreen.clearAnimation();
+                        aloneInTheBlue.setVisibility(View.INVISIBLE);
+                        aloneInTheRed.setVisibility(View.INVISIBLE);
+                        aloneInTheGreen.setVisibility(View.INVISIBLE);
+                        aloneInTheGreen.invalidate();
+                        aloneInTheGreen.requestLayout();}});
+
+            }
+
+            @Override
+            public void onError(int arg0) {
+                // TODO Auto-generated method stub
+                System.err.println("SIdasodajsodjaosijd: "+arg0);
+                Toast toast = Toast.makeText(getApplicationContext(),"ERROR: "+arg0, Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
+                toast.show();
+
+            }
+
+            @Override
+            public void onEvent(int arg0, Bundle arg1) {
+                System.out.println("EVENT");
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onPartialResults(Bundle partialResults) {
+                // TODO Auto-generated method stub
+                System.out.println("PARTIAL");
+                Toast toast = Toast.makeText(getApplicationContext(),"Partial: "+partialResults.toString(), Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
+                toast.show();
+
+            }
+
+            @Override
+            public void onReadyForSpeech(Bundle params) {
+                Toast toast = Toast.makeText(getApplicationContext(),"Ready", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
+                toast.show();
+                System.out.println("READY");
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onResults(Bundle results) {
+
+                // TODO Auto-generated method stub
+                String str = new String();
+                System.out.println("onResults " + results);
+                ArrayList data = results.getStringArrayList(RESULTS_RECOGNITION);
+                for (int i = 0; i < data.size(); i++)
+                {
+                    System.out.println("> result " + data.get(i));
+                    str += data.get(i);
+                }
+                ArrayList<String> userMessage;
+                userMessage = results.getStringArrayList(RESULTS_RECOGNITION);
+                System.out.println("END END results: "+userMessage.get(0));
+                Toast toast = Toast.makeText(getApplicationContext(),"RESULT: "+userMessage.get(0), Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
+                toast.show();
+                manager.publish(userMessage.get(0));
+
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        Log.i("TextToSpeech","On Done");
+                        animation_while_input.cancel();
+                        aloneInTheBlue.clearAnimation();
+                        aloneInTheRed.clearAnimation();
+                        aloneInTheGreen.clearAnimation();
+                        aloneInTheBlue.setVisibility(View.INVISIBLE);
+                        aloneInTheRed.setVisibility(View.INVISIBLE);
+                        aloneInTheGreen.setVisibility(View.INVISIBLE);
+                        aloneInTheGreen.invalidate();
+                        aloneInTheGreen.requestLayout();}});
+
+            }
+
+            @Override
+            public void onRmsChanged(float rmsdB) {
+                // TODO Auto-generated method stub
+                //System.out.println("> "+rmsdB);
+
+            }
+
+
+        });
+        animationWhileInput();
+        mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
     }
 }

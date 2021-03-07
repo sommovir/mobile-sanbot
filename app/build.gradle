@@ -10,7 +10,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
-        versionName "0.9.8 Beta"
+        versionName "0.9.9"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -28,7 +28,9 @@ repositories {
         url "https://repo.eclipse.org/content/repositories/paho-snapshots/"
 
 
+
     }
+    maven { url 'https://jitpack.io' }
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 
@@ -52,6 +54,8 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.github.markushi:circlebutton:1.1'
     implementation 'com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5'
-   // implementation 'com.squareup.picasso:picasso:2.6.0-SNAPSHOT'
+    implementation 'com.github.vikramezhil:DroidSpeech:v2.0.3'
+   // implementation 'com.github.vikramezhil:DroidSpeech2.0:vx.y'
+    // implementation 'com.squareup.picasso:picasso:2.6.0-SNAPSHOT'
 
 }
