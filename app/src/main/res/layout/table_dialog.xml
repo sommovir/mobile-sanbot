@@ -3,7 +3,7 @@
     android:id="@+id/tableLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#daeff9"
+    android:background="#ffc000"
     android:orientation="horizontal"
     android:stretchColumns="*">
 </TableLayout>

@@ -5,7 +5,7 @@
         android:toAlpha="0.0"
         android:duration="300"
         android:startOffset="0"
-        android:repeatCount="7"
+        android:repeatCount="17"
         android:repeatMode="reverse"
         android:interpolator="@android:anim/linear_interpolator"
         />
@@ -15,16 +15,8 @@
         android:toAlpha="1.0"
         android:duration="300"
         android:startOffset="300"
-        android:repeatCount="7"
+        android:repeatCount="17"
         android:interpolator="@android:anim/linear_interpolator"
         />
-    <alpha xmlns:android="http://schemas.android.com/apk/res/android"
-        android:fromAlpha="1.0"
-        android:toAlpha="0.0"
-        android:duration="1000"
-        android:startOffset="1500"
-        android:repeatCount="5"
-        android:repeatMode="reverse"
-        android:interpolator="@android:anim/linear_interpolator"
-        />
+
 </set>

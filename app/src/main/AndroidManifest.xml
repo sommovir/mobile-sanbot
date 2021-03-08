@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
     <queries>
         <intent>
             <action android:name="android.speech.RecognitionService" />
@@ -23,11 +24,15 @@
         android:supportsRtl="true"
         android:testOnly="false"
         android:theme="@style/AppTheme">
-        <activity android:name=".YouTubeActivity"
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
             android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.Dialog"
-            />
-
+            android:theme="@style/Theme.AppCompat.Dialog"/>
+        <activity
+            android:name=".YouTubeActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.Dialog" />
 
         <service
             android:name=".NotificationService"

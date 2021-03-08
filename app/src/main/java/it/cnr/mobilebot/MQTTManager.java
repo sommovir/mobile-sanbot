@@ -135,6 +135,7 @@ public class MQTTManager {
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"youtube",qos);
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"link",qos);
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"img",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"listen",qos);
                         client.subscribe(Topics.RESPONSES.getTopic() +"/"+clientId,qos);
                     } catch (MqttException e) {
                         e.printStackTrace();
@@ -257,7 +258,12 @@ public class MQTTManager {
                text = parseMultiText(text);
                 System.out.println("Multi text detected: ["+text+"] is the chosen one");
             }
-            faceActivity.speakText(text);
+            if(text.startsWith("<AUTOLISTEN>")){
+                text = text.replace("<AUTOLISTEN>", "");
+                faceActivity.speakText(text, true);
+            }else {
+                faceActivity.speakText(text, false);
+            }
 
         }
         if(topic.endsWith("to_user/command")){
@@ -285,6 +291,16 @@ public class MQTTManager {
         if(topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"img")){
             String imglink = (new String(message.getPayload()));
             faceActivity.showImage(imglink);
+        }
+        if(topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"listen")){
+           // Toast.makeText(context, "autoListen set", Toast.LENGTH_LONG).show();
+            String mmm = new String(message.getPayload());
+            if(mmm.equals("auto")){
+                faceActivity.setAutoListen();
+            }else {
+                Long time = Long.parseLong(mmm);
+                faceActivity.listenAt(time);
+            }
         }
         if(topic.endsWith("to_user/link") || topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"link")){
             String link = (new String(message.getPayload()));
