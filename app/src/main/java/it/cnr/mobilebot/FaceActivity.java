@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -303,6 +304,17 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         vetroRotto.setVisibility(View.INVISIBLE);
 
         connectionView = findViewById(R.id.imageView_ServerStatus);
+
+        try {
+            TextView versionView = findViewById(R.id.version);
+
+            PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getApplicationContext().getPackageName(), 0);
+            String version = pInfo.versionName;
+            versionView.setText(version);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        ;
 
         button_speak.bringToFront();
         button_speak.setOnClickListener(new View.OnClickListener() {
@@ -1581,6 +1593,12 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     }
 
+    public void forceServerOnline(){
+        ImageView img= (ImageView) findViewById(R.id.imageView_ServerStatus);
+        img.setImageResource(R.drawable.green);
+        img.setAnimation(server_online_animazione);
+        server_online_animazione.start();
+    }
     @Override
     public void serverOnline() {
         ImageView img= (ImageView) findViewById(R.id.imageView_ServerStatus);

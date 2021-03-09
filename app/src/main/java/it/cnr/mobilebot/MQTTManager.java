@@ -2,10 +2,12 @@ package it.cnr.mobilebot;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
+
 
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -23,7 +25,14 @@ import org.eclipse.paho.client.mqttv3.MqttPingSender;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.concurrent.ThreadLocalRandom;
 
 import it.cnr.mobilebot.logic.EventManager;
@@ -136,6 +145,7 @@ public class MQTTManager {
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"link",qos);
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"img",qos);
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"listen",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"reminder",qos);
                         client.subscribe(Topics.RESPONSES.getTopic() +"/"+clientId,qos);
                     } catch (MqttException e) {
                         e.printStackTrace();
@@ -188,6 +198,13 @@ public class MQTTManager {
                     client.subscribe("user/110/to_user/command/vtable",qos);
                     client.subscribe("user/110/to_user/command/youtube",qos);
                     client.subscribe(Topics.RESPONSES.getTopic() +"/"+clientId,qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"face",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"table",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"youtube",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"link",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"img",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"listen",qos);
+                        client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"reminder",qos);
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
@@ -251,6 +268,7 @@ public class MQTTManager {
     public void parseMessage(String topic, MqttMessage message){
         System.out.println("TOPIC: "+topic);
         if(topic.equals(Topics.RESPONSES.getTopic() +"/"+clientId)){
+            faceActivity.forceServerOnline();
             String text = (new String(message.getPayload(),StandardCharsets.UTF_8));
             System.out.println("TEXT = "+ text);
 
@@ -291,6 +309,31 @@ public class MQTTManager {
         if(topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"img")){
             String imglink = (new String(message.getPayload()));
             faceActivity.showImage(imglink);
+        }
+        if(topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"reminder")){
+            try {
+                String reminderData = (new String(message.getPayload()));
+
+                String reminderText = reminderData.split("<:>")[0];
+                String reminderTime = reminderData.split("<:>")[1];
+                int hh = Integer.parseInt(reminderTime.split(":")[0]);
+                int mm = Integer.parseInt(reminderTime.split(":")[1]);
+                // LocalDateTime localDateTime = LocalDate.now().atTime(LocalTime.parse(reminderTime)); API 26
+                //System.out.println("LOCAL DATE TIME ALARM -> "+localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));  API 26
+
+                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+                Date date = sdf.parse(reminderTime);
+
+                Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
+                calendar.setTime(date);
+
+
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
+
+
+
         }
         if(topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"listen")){
            // Toast.makeText(context, "autoListen set", Toast.LENGTH_LONG).show();
