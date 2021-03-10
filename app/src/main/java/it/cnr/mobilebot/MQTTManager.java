@@ -386,6 +386,17 @@ public class MQTTManager {
 
         if(topic.endsWith("to_user/face") || topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"face")){
             String text = (new String(message.getPayload()));
+
+            System.out.println("FACE CHANGE DETECTED: "+text);
+
+            if(text.contains(",")){
+                System.out.println("timeout detected");
+                Long backToNormalTime = null;
+                String stringytime = text.split(",")[1];
+                backToNormalTime = Long.parseLong(stringytime);
+                faceActivity.setBackToNormalTime(backToNormalTime);
+                text = text.split(",")[0];
+            }
             if(text.equals("fun")){
                 faceActivity.ilRisoAbbonda();
             }
