@@ -270,6 +270,7 @@ public class MQTTManager {
         if(topic.equals(Topics.RESPONSES.getTopic() +"/"+clientId)){
             faceActivity.forceServerOnline();
             String text = (new String(message.getPayload(),StandardCharsets.UTF_8));
+            text.replace("<AT>","@");
             System.out.println("TEXT = "+ text);
 
             if(text.contains("%")){
