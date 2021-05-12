@@ -149,6 +149,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
     private boolean cry = false;
     private boolean love = false;
     private boolean listening = false;
+    private boolean willanswer = false;
 
 
     public static boolean isActivityVisible() {
@@ -324,6 +325,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         button_speak.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
+                System.out.println("sono qui a domandarmi il senso della vita");
                 try {
                     if (mp_REC.isPlaying()) {
                         mp_REC.pause();
@@ -334,8 +336,9 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 System.out.println("rec button has been pressed");
 
                 button_speak.setBackgroundResource(R.drawable.speak_button_pressed);
-
+                System.out.println("trasto il plano");
                 listen();
+                System.out.println("non trasto più il plano");
 
 
             }
@@ -348,6 +351,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
 
                 speakText("ok basta",false);
+                manager.remoteLog(LoggingTag.BARGEINS.getTag());
                // button_stop.setVisibility(View.INVISIBLE);
             }
         });
@@ -1601,6 +1605,8 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             aloneInTheBlue.invalidate();
                             aloneInTheBlue.requestLayout();
                             if(autolisten){
+                                //SOMMOHERE
+                                willanswer = true;
                                 autolisten = false;
                                 button_speak.setBackgroundResource(R.drawable.speak_button_pressed);
                                 listen();
@@ -1836,8 +1842,13 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
                     toast.show();
                     if(arg0 == 7){
-                        manager.remoteLog(LoggingTag.TIMEOUT.getTag());
+                        if(willanswer){
+                            manager.remoteLog(LoggingTag.NO_USER_ANSWER.getTag());
+                        }else {
+                            manager.remoteLog(LoggingTag.TIMEOUT.getTag());
+                        }
                     }
+                    willanswer = false;
 
 
                 }
@@ -1885,16 +1896,17 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     userMessage = results.getStringArrayList(RESULTS_RECOGNITION);
                     if(userMessage == null || userMessage.isEmpty() || userMessage.get(0) == null || userMessage.get(0).isEmpty()){
                         System.out.println("NO ANSWER");
-                        System.out.println("NO ANSWER");
-                        System.out.println("NO ANSWER");
-                        System.out.println("NO ANSWER");
-                        System.out.println("NO ANSWER");
-                        System.out.println("NO ANSWER");
-                        System.out.println("NO ANSWER");
                         System.out.println("--");
 
                     }
                     System.out.println("hai detto: "+userMessage.get(0));
+                    if(userMessage.get(0).toLowerCase().equals("sono triste")){
+                        piangi();
+                    }
+                    if(userMessage.get(0).toLowerCase().equals("ti voglio bene")){
+                        innamorati();
+                    }
+
 
                     Toast toast = Toast.makeText(getApplicationContext(),"hai detto: "+userMessage.get(0), Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
@@ -1929,6 +1941,8 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         }
         if(listening){
             stopListen();
+            System.out.println("FORCED STOP LISTENING");
+            manager.remoteLog(LoggingTag.CANCEL.getTag());
         }else{
             listening = true;
             animationWhileInput();
