@@ -419,6 +419,30 @@ public class MQTTManager {
         }
     }
 
+    public void remoteLog(String text){
+        MqttMessage message = new MqttMessage(text.getBytes(StandardCharsets.UTF_8));
+        message.setQos(2);
+        message.setRetained(false);
+
+        //String topic = "user/110/from_user";
+        String topic = Topics.LOG.getTopic() +"/"+clientId;
+
+        try {
+            client.publish(topic, message);
+            Log.i("mqtt", "Message published");
+
+            // client.disconnect();
+            //Log.i("mqtt", "client disconnected");
+
+        } catch (MqttPersistenceException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+
+        } catch (MqttException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
 
     public void publish(String text){

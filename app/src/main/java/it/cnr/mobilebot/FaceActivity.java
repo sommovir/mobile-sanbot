@@ -83,6 +83,7 @@ import java.util.Map;
 import at.markushi.ui.CircleButton;
 import it.cnr.mobilebot.logic.ConnectionEventListener;
 import it.cnr.mobilebot.logic.EventManager;
+import it.cnr.mobilebot.logic.LoggingTag;
 
 import static android.speech.SpeechRecognizer.RESULTS_RECOGNITION;
 
@@ -1834,6 +1835,9 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     Toast toast = Toast.makeText(getApplicationContext(),"ERROR: "+arg0, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
                     toast.show();
+                    if(arg0 == 7){
+                        manager.remoteLog(LoggingTag.TIMEOUT.getTag());
+                    }
 
 
                 }
@@ -1879,7 +1883,19 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     }
                     ArrayList<String> userMessage;
                     userMessage = results.getStringArrayList(RESULTS_RECOGNITION);
+                    if(userMessage == null || userMessage.isEmpty() || userMessage.get(0) == null || userMessage.get(0).isEmpty()){
+                        System.out.println("NO ANSWER");
+                        System.out.println("NO ANSWER");
+                        System.out.println("NO ANSWER");
+                        System.out.println("NO ANSWER");
+                        System.out.println("NO ANSWER");
+                        System.out.println("NO ANSWER");
+                        System.out.println("NO ANSWER");
+                        System.out.println("--");
+
+                    }
                     System.out.println("hai detto: "+userMessage.get(0));
+
                     Toast toast = Toast.makeText(getApplicationContext(),"hai detto: "+userMessage.get(0), Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
                     toast.show();
