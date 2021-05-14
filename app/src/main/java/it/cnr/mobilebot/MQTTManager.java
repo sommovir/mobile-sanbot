@@ -147,6 +147,7 @@ public class MQTTManager {
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"listen",qos);
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"reminder",qos);
                         client.subscribe(Topics.RESPONSES.getTopic() +"/"+clientId,qos);
+                        Settings.getInstance(context,MQTTManager.this); //manda l'username se presente
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
@@ -416,6 +417,31 @@ public class MQTTManager {
             if(text.equals("rage")){
                 faceActivity.incazzati();
             }
+        }
+    }
+
+    public void changeName(String username){
+        MqttMessage message = new MqttMessage(username.getBytes(StandardCharsets.UTF_8));
+        message.setQos(2);
+        message.setRetained(false);
+
+        //String topic = "user/110/from_user";
+        String topic = Topics.USERNAME.getTopic() +"/"+clientId;
+
+        try {
+            client.publish(topic, message);
+            Log.i("mqtt", "Message published");
+
+            // client.disconnect();
+            //Log.i("mqtt", "client disconnected");
+
+        } catch (MqttPersistenceException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+
+        } catch (MqttException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 

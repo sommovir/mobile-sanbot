@@ -190,6 +190,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         mDetector = new GestureDetectorCompat(getApplicationContext(),this);
         requestRecordAudioPermission();
 
+
         View decorView = getWindow().getDecorView();
 // Hide both the navigation bar and the status bar.
 // SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
@@ -592,7 +593,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
             @Override
             public boolean onLongClick(View view) {
 
-                if(Settings.getInstance(getApplicationContext()).isGoogleSpeechEnabled()) {
+                if(Settings.getInstance(getApplicationContext(),manager).isGoogleSpeechEnabled()) {
 
                     //CODICE PROVA
                     Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -763,6 +764,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
             connectionView.setAnimation(server_online_animazione);
             server_online_animazione.start();
         }
+
 
 
 

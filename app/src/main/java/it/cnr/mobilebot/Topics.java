@@ -12,6 +12,7 @@ public enum Topics {
     EMERGENCY("emergency"),
     RESPONSES("responses"),
     COMMAND("commands"),
+    USERNAME("username"),
     INFO("info_channel");
 
     private Topics(String topic) {
