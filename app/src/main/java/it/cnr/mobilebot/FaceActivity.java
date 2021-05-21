@@ -136,7 +136,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     private boolean bastaIndugi = false;
 
-    private String initialMessage = "Buonasera, benvenuto nella chat-bot dei laboratori di Televita! Come posso aiutarla?";
+    private String initialMessage = null;
 
     private Map<String,Boolean> colorCellMap = new HashMap<>();
     private boolean vetroSpaccato = false;
@@ -320,7 +320,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        ;
+
 
         button_speak.bringToFront();
         button_speak.setOnClickListener(new View.OnClickListener() {
@@ -335,6 +335,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 } catch(Exception e) { e.printStackTrace(); }
 
                 System.out.println("rec button has been pressed");
+                manager.buttonPressed(LoggingTag.SPEAK);
 
                 button_speak.setBackgroundResource(R.drawable.speak_button_pressed);
                 System.out.println("trasto il plano");
@@ -350,9 +351,19 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         button_stop.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-
-                speakText("ok basta",false);
                 manager.remoteLog(LoggingTag.BARGEINS.getTag());
+                button_stop.setVisibility(View.INVISIBLE); //SPAGHETTI
+
+                new Handler().postDelayed(new Runnable() {
+                                              @Override
+                                              public void run() {
+                                                  speakText("ok basta", false);
+                                              }
+
+
+                                          },0);
+
+
                // button_stop.setVisibility(View.INVISIBLE);
             }
         });
@@ -406,6 +417,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 try {
                     if (mp_button.isPlaying()) {
                         mp_button.pause();
+                        //mp_button.setVolume(0.5f,0.5f);
                         mp_button.seekTo(0);
                     } mp_button.start();
                 } catch(Exception e) { e.printStackTrace(); }
@@ -440,15 +452,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         });
 
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
 
-
-                speakText(initialMessage,false);
-
-            }
-        }, 1000);
 
         final TextView button2 = findViewById(R.id.button_mainButton2);
         button2.bringToFront();
@@ -462,6 +466,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 } catch(Exception e) { e.printStackTrace(); }
 
                 System.out.println("repeat button has been pressed");
+                manager.buttonPressed(LoggingTag.REPEAT);
                 Resources res = getApplicationContext().getResources();
                 final Drawable d1 = ResourcesCompat.getDrawable(res, R.drawable.button_bar_repeat_r, null);
                 final Drawable d2 = ResourcesCompat.getDrawable(res, R.drawable.button_bar_repeat_click_r, null);
@@ -706,13 +711,16 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             }
                         }
                     }, 200);
+                    if(!tts.isSpeaking()){
+                        try {
 
-                    try {
-                        if (mp_ciglia.isPlaying()) {
-                            mp_ciglia.pause();
-                            mp_ciglia.seekTo(0);
-                        } mp_ciglia.start();
-                    } catch(Exception e) { e.printStackTrace(); }
+                            if (mp_ciglia.isPlaying()) {
+                                mp_ciglia.pause();
+                                mp_ciglia.setVolume(0.5f,0.5f);
+                                mp_ciglia.seekTo(0);
+                            } mp_ciglia.start();
+                        } catch(Exception e) { e.printStackTrace(); }
+                    }
 
 
                 }
@@ -758,6 +766,21 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
         System.out.println("connecting MQTT.. ");
         manager = new MQTTManager(this.getApplicationContext());
+
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    initialMessage = "Buonasera " + (Settings.getInstance(getApplicationContext(), manager).getUsername()) + ", benvenuto nella chat-bot dei laboratori di Televita! Come posso aiutarla?";
+
+                }catch(Exception ex){
+                    initialMessage = "Buonasera, benvenuto nella chat-bot dei laboratori di Televita! Come posso aiutarla?";
+                }
+                speakText(initialMessage,false);
+
+            }
+        }, 1000);
 
         manager.setFaceActivity(this);
         if(manager.isConnected()){
@@ -1265,7 +1288,9 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
     }
 
     public void speakText(String text, boolean autolisten) {
-        button_stop.setVisibility(View.VISIBLE);
+        if(!text.equals("ok basta")) {
+            button_stop.setVisibility(View.VISIBLE);
+        }
         this.autolisten = autolisten;
         Bundle params = new Bundle();
         params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "");
@@ -1980,12 +2005,17 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 love = false;
                 stopCry();
                 occhiView.setImageResource(R.drawable.occhi_chiusi);
-                try {
-                    if (mp_ciglia.isPlaying()) {
-                        mp_ciglia.pause();
-                        mp_ciglia.seekTo(0);
-                    } mp_ciglia.start();
-                } catch(Exception e) { e.printStackTrace(); }
+                if(!tts.isSpeaking()) {
+                    try {
+                        if (mp_ciglia.isPlaying()) {
+                            mp_ciglia.pause();
+                            mp_ciglia.seekTo(0);
+                        }
+                        mp_ciglia.start();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
 
 
 

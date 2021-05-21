@@ -36,6 +36,7 @@ import java.util.GregorianCalendar;
 import java.util.concurrent.ThreadLocalRandom;
 
 import it.cnr.mobilebot.logic.EventManager;
+import it.cnr.mobilebot.logic.LoggingTag;
 import it.cnr.mobilebot.logic.MqttPingSenderL;
 
 /**
@@ -445,6 +446,31 @@ public class MQTTManager {
         }
     }
 
+    public void buttonPressed(LoggingTag tag){
+        MqttMessage message = new MqttMessage(tag.getTag().getBytes(StandardCharsets.UTF_8));
+        message.setQos(2);
+        message.setRetained(false);
+
+        //String topic = "user/110/from_user";
+        String topic = Topics.BUTTON_PRESSED.getTopic() +"/"+clientId;
+
+        try {
+            client.publish(topic, message);
+            Log.i("mqtt", "Message published");
+
+            // client.disconBUTTON_PRESSEDnect();
+            //Log.i("mqtt", "client disconnected");
+
+        } catch (MqttPersistenceException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+
+        } catch (MqttException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     public void remoteLog(String text){
         MqttMessage message = new MqttMessage(text.getBytes(StandardCharsets.UTF_8));
         message.setQos(2);
@@ -457,7 +483,7 @@ public class MQTTManager {
             client.publish(topic, message);
             Log.i("mqtt", "Message published");
 
-            // client.disconnect();
+            // client.disconBUTTON_PRESSEDnect();
             //Log.i("mqtt", "client disconnected");
 
         } catch (MqttPersistenceException e) {

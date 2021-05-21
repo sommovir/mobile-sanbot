@@ -17,7 +17,19 @@ public enum LoggingTag {
     BARGEINS("BARGEINS"),
     USER_CONNECTED("USER CONNECTED"),
     USER_DISCONNECTED("USER DISCONNECTED"),
-    CHANGE_USERNAME("CHANGE_USERNAME"); //when the user change his username
+    FACE("FACE"),
+    TABLE("TABLE"),
+    VIDEO("VIDEO"),
+    IMG("IMG"),
+    LINK("LINK"),
+    CHANGE_USERNAME("CHANGE USERNAME"), //when the user change his username
+    REC_BUTTON_PRESSED("REC BUTTON PRESSED BY USER"),
+    WRONG_ANSWER("WRONG ANSWER"),
+    NEGATIVE_ANS("NEGATIVE ANSWER"),
+    BYPASS("BYPASS"),
+    POSITIVE_ANS("POSITIVE ANSWER"),
+    SPEAK("SPEAK"), //no need to be "helped"
+    REPEAT("REPEAT");
 
 
     private LoggingTag(String tag) {

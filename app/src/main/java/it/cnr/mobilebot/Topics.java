@@ -13,6 +13,8 @@ public enum Topics {
     RESPONSES("responses"),
     COMMAND("commands"),
     USERNAME("username"),
+    BUTTON_PRESSED("button_pressed"),
+    REPEAT("repeat"),
     INFO("info_channel");
 
     private Topics(String topic) {
