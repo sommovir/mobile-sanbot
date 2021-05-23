@@ -330,6 +330,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 try {
                     if (mp_REC.isPlaying()) {
                         mp_REC.pause();
+                        mp_REC.setVolume(1f,1f);
                         mp_REC.seekTo(0);
                     } mp_REC.start();
                 } catch(Exception e) { e.printStackTrace(); }
@@ -376,6 +377,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 try {
                     if (mp_button.isPlaying()) {
                         mp_button.pause();
+                        mp_button.setVolume(1f,1f);
                         mp_button.seekTo(0);
                     } mp_button.start();
                 } catch(Exception e) { e.printStackTrace(); }
@@ -417,7 +419,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 try {
                     if (mp_button.isPlaying()) {
                         mp_button.pause();
-                        //mp_button.setVolume(0.5f,0.5f);
+                        mp_button.setVolume(1f,1f);
                         mp_button.seekTo(0);
                     } mp_button.start();
                 } catch(Exception e) { e.printStackTrace(); }
@@ -461,6 +463,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 try {
                     if (mp_button.isPlaying()) {
                         mp_button.pause();
+                        mp_button.setVolume(1f,1f);
                         mp_button.seekTo(0);
                     } mp_button.start();
                 } catch(Exception e) { e.printStackTrace(); }
@@ -695,6 +698,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                                 try {
                                     if (mp_glass.isPlaying()) {
                                         mp_glass.pause();
+                                        mp_glass.setVolume(1f,1f);
                                         mp_glass.seekTo(0);
                                     } mp_glass.start();
                                 } catch(Exception e) { e.printStackTrace(); }
@@ -1294,7 +1298,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         this.autolisten = autolisten;
         Bundle params = new Bundle();
         params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "");
-
+        params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1f);
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, params, "UniqueID"+new Date().getTime());
 
 
@@ -1683,7 +1687,9 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 Toast toast = Toast.makeText(getApplicationContext(),"Server Online", Toast.LENGTH_SHORT);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
-                speakText("Server online",false);
+                if(!tts.isSpeaking()) {
+                    speakText("Server online", false);
+                }
             }
         }
         button_reconnect.setVisibility(View.INVISIBLE);
@@ -1702,7 +1708,9 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
         if(isActivityVisible()) {
             Toast.makeText(getApplicationContext(), "Server Offline", Toast.LENGTH_SHORT).show();
-            speakText("Server offline",false);
+            if(!tts.isSpeaking()) {
+                speakText("Server offline", false);
+            }
 
         }
         //vetroRotto.setVisibility(View.VISIBLE);
@@ -1830,7 +1838,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
             mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,
                     this.getPackageName());
             mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5);
-
+            mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 40000000);
             mSpeechRecognizer.setRecognitionListener(new RecognitionListener() {
 
                 @Override
@@ -2009,6 +2017,7 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     try {
                         if (mp_ciglia.isPlaying()) {
                             mp_ciglia.pause();
+                            mp_ciglia.setVolume(0.5f,0.5f);
                             mp_ciglia.seekTo(0);
                         }
                         mp_ciglia.start();
