@@ -24,11 +24,15 @@
         android:supportsRtl="true"
         android:testOnly="false"
         android:theme="@style/AppTheme">
+        <activity android:name=".logic.CognitiveGameItem"></activity>
+        <activity
+            android:name=".GameSelectorActivity"
+            android:screenOrientation="landscape" />
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.Dialog"/>
+            android:theme="@style/Theme.AppCompat.Dialog" />
         <activity
             android:name=".YouTubeActivity"
             android:screenOrientation="landscape"

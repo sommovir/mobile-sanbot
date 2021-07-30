@@ -53,6 +53,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.MediaController;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -81,6 +82,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import at.markushi.ui.CircleButton;
+import it.cnr.mobilebot.logic.CognitiveGame;
+import it.cnr.mobilebot.logic.CognitiveGameListModel;
 import it.cnr.mobilebot.logic.ConnectionEventListener;
 import it.cnr.mobilebot.logic.EventManager;
 import it.cnr.mobilebot.logic.LoggingTag;
@@ -500,11 +503,19 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         button3.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                Toast toast = Toast.makeText(getApplicationContext(),"Questa funzione non è al momento disponibile", Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
-                toast.show();
+                Intent gameSelectorActivity = new Intent(FaceActivity.this, GameSelectorActivity.class);
+
+
+
+                FaceActivity.this.startActivity(gameSelectorActivity);
+
+               // Toast toast = Toast.makeText(getApplicationContext(),"Questa funzione non è al momento disponibile", Toast.LENGTH_SHORT);
+                //toast.setGravity(Gravity.TOP |Gravity.CENTER_HORIZONTAL, 0, 0);
+                //toast.show();
             }
         });
+
+
         final TextView button4 = findViewById(R.id.button_mainButton4);
         button4.bringToFront();
         button4.setOnClickListener(new View.OnClickListener() {
