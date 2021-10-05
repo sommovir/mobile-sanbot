@@ -73,6 +73,7 @@ import com.vikramezhil.droidspeech.DroidSpeech;
 import com.vikramezhil.droidspeech.OnDSListener;
 
 import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -775,11 +776,15 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                SimpleDateFormat sdf = new SimpleDateFormat("kk:mm");
+                String hour = sdf.format(new Date());
+                System.out.println("hour: "+hour);
+                String saluto = (Integer.parseInt(hour.split(":")[0]) <13 ? "Buongiorno " :"Buonasera ");
                 try {
-                    initialMessage = "Buonasera " + (Settings.getInstance(getApplicationContext(), manager).getUsername()) + ", benvenuto nella chat-bot dei laboratori di Televita! Come posso aiutarla?";
+                    initialMessage = saluto + (Settings.getInstance(getApplicationContext(), manager).getUsername()) + ", benvenuto nella chat-bot dei laboratori di Televita! Come posso aiutarla?";
 
                 }catch(Exception ex){
-                    initialMessage = "Buonasera, benvenuto nella chat-bot dei laboratori di Televita! Come posso aiutarla?";
+                    initialMessage = saluto+ ", benvenuto nella chat-bot dei laboratori di Televita! Come posso aiutarla?";
                 }
                 speakText(initialMessage,false);
 
