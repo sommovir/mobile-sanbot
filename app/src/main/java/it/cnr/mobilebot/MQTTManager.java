@@ -1,5 +1,6 @@
 package it.cnr.mobilebot;
 
+import android.app.admin.DeviceAdminReceiver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -35,6 +36,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.concurrent.ThreadLocalRandom;
 
+import it.cnr.mobilebot.logic.DeviceType;
 import it.cnr.mobilebot.logic.EventManager;
 import it.cnr.mobilebot.logic.LoggingTag;
 import it.cnr.mobilebot.logic.MqttPingSenderL;
@@ -149,6 +151,7 @@ public class MQTTManager {
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"reminder",qos);
                         client.subscribe(Topics.RESPONSES.getTopic() +"/"+clientId,qos);
                         Settings.getInstance(context,MQTTManager.this); //manda l'username se presente
+                        publish(Topics.GETDEVICE.getTopic(),clientId+":"+ DeviceType.MOBILE.getDeviceType());
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
@@ -496,6 +499,31 @@ public class MQTTManager {
         }
     }
 
+
+    public void publish(String topic, String text){
+        //PUBLISH THE MESSAGE
+        MqttMessage message = new MqttMessage(text.getBytes(StandardCharsets.UTF_8));
+        message.setQos(2);
+        message.setRetained(false);
+
+        //String topic = "user/110/from_user";
+
+        try {
+            client.publish(topic, message);
+            Log.i(topic, "Message published");
+
+            // client.disconnect();
+            //Log.i("mqtt", "client disconnected");
+
+        } catch (MqttPersistenceException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+
+        } catch (MqttException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
     public void publish(String text){
         //PUBLISH THE MESSAGE
