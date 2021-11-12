@@ -193,6 +193,7 @@ public class MQTTManager {
                 @Override
                 public void connectComplete(boolean reconnect, String serverURI) {
                     EventManager.getInstance().serverOnline();
+                    publish(Topics.GETDEVICE.getTopic(),clientId+":"+ DeviceType.MOBILE.getDeviceType());
                     try {
                         client.subscribe("user/110/to_user/text",qos);
 
