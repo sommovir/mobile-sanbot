@@ -5,15 +5,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ListView;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import it.cnr.mobilebot.game.GameAdapter;
-import it.cnr.mobilebot.logic.CognitiveGame;
-import it.cnr.mobilebot.logic.CognitiveGameListModel;
+import it.cnr.mobilebot.game.mindgames.GameAdapter;
 
 public class GameSelectorActivity extends AppCompatActivity {
 

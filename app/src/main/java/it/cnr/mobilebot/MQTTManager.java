@@ -1,45 +1,37 @@
 package it.cnr.mobilebot;
 
-import android.app.admin.DeviceAdminReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 
+import com.google.gson.Gson;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
-import org.eclipse.paho.client.mqttv3.MqttPingSender;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.json.JSONException;
 
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.concurrent.ThreadLocalRandom;
 
+import it.cnr.mobilebot.game.mindgames.supermarket.SuperMarket;
+import it.cnr.mobilebot.game.mindgames.supermarket.SuperMarketBlob;
 import it.cnr.mobilebot.logic.DeviceType;
 import it.cnr.mobilebot.logic.EventManager;
 import it.cnr.mobilebot.logic.LoggingTag;
-import it.cnr.mobilebot.logic.MqttPingSenderL;
 
 /**
  * Created by Luca Coraci [luca.coraci@istc.cnr.it] on 18/06/2020.
@@ -50,11 +42,12 @@ public class MQTTManager {
     MqttAndroidClient client = null;
     //MqttAsyncClient client = null;
     boolean test = false;
-    private FaceActivity faceActivity = null;
+    public static FaceActivity faceActivity = null;
     private static Context context = null;
     public static String ip = "192.168.43.112";
     public MqttMessage lastMessage = null;
     public String lastTopic = null;
+    public static SuperMarketBlob superMarketBlob;
 
     public void updateIP(String m_text) {
         SharedPreferences sharedPref = context.getSharedPreferences(
@@ -66,7 +59,7 @@ public class MQTTManager {
         connect();
     }
 
-    public void repeat(){
+    public void repeat() throws JSONException {
         if(lastMessage != null){
             parseMessage(lastTopic, lastMessage);
         }
@@ -74,6 +67,10 @@ public class MQTTManager {
 
     public void setFaceActivity(FaceActivity faceActivity) {
         this.faceActivity = faceActivity;
+    }
+
+    public FaceActivity getFaceActivity() {
+        return faceActivity;
     }
 
     public MQTTManager(Context context){  //ws://server:port/mqtt      tcp://151.15.31.217:1883
@@ -150,6 +147,7 @@ public class MQTTManager {
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"listen",qos);
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"reminder",qos);
                         client.subscribe(Topics.RESPONSES.getTopic() +"/"+clientId,qos);
+                        client.subscribe(Topics.MINDGAME.getTopic()+"/demo/",qos);
                         Settings.getInstance(context,MQTTManager.this); //manda l'username se presente
                         publish(Topics.GETDEVICE.getTopic(),clientId+":"+ DeviceType.MOBILE.getDeviceType());
                     } catch (MqttException e) {
@@ -211,6 +209,7 @@ public class MQTTManager {
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"img",qos);
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"listen",qos);
                         client.subscribe(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"reminder",qos);
+                        client.subscribe(Topics.MINDGAME.getTopic()+"/demo",qos);
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
@@ -271,7 +270,7 @@ public class MQTTManager {
         return tokens[nextInt];
     }
 
-    public void parseMessage(String topic, MqttMessage message){
+    public void parseMessage(String topic, MqttMessage message) throws JSONException {
         System.out.println("TOPIC: "+topic);
         if(topic.equals(Topics.RESPONSES.getTopic() +"/"+clientId)){
             faceActivity.forceServerOnline();
@@ -351,7 +350,23 @@ public class MQTTManager {
                 Long time = Long.parseLong(mmm);
                 faceActivity.listenAt(time);
             }
+        }if(topic.equals(Topics.MINDGAME.getTopic()+"/demo")){
+            try{
+                String mmm = new String(message.getPayload());
+                superMarketBlob = new Gson().fromJson(mmm,SuperMarketBlob.class);
+                if(!superMarketBlob.getRequest().isEmpty()) {
+                    Intent intent = new Intent(EventManager.getInstance().getContext(), SuperMarket.class);
+                    intent.putExtra("Description", superMarketBlob.getVocalDescription());
+                    EventManager.getInstance().getContext().startActivity(intent);
+
+                    faceActivity.speakText(superMarketBlob.getInitialMessage() + "." + superMarketBlob.getRequest(), false);
+
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
+
         if(topic.endsWith("to_user/link") || topic.equals(Topics.COMMAND.getTopic()+"/"+clientId+"/"+"link")){
             String link = (new String(message.getPayload()));
             System.out.println("Link da mostrare: "+link);

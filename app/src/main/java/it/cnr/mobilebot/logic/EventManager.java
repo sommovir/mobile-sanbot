@@ -1,5 +1,6 @@
 package it.cnr.mobilebot.logic;
 
+import android.content.Context;
 import android.provider.MediaStore;
 
 import java.util.LinkedList;
@@ -10,6 +11,15 @@ public class EventManager {
     private boolean serverOnline = false;
 
     private static EventManager _instance = null;
+    private Context context;
+
+    public Context getContext() {
+        return context;
+    }
+
+    public void setContext(Context context) {
+        this.context = context;
+    }
 
     private List<ConnectionEventListener> connectionEventListenerList = new LinkedList<>();
     private List<MediaEventListener> mediaEventListeners = new LinkedList<>();
