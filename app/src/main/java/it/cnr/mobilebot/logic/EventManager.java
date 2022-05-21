@@ -6,12 +6,16 @@ import android.provider.MediaStore;
 import java.util.LinkedList;
 import java.util.List;
 
+import it.cnr.mobilebot.game.mindgames.supermarket.SuperMarket;
+import it.cnr.mobilebot.game.mindgames.supermarket.SuperMarketBlob;
+
 public class EventManager {
 
     private boolean serverOnline = false;
 
     private static EventManager _instance = null;
     private Context context;
+    private SuperMarketBlob superMarketBlob;
 
     public Context getContext() {
         return context;
@@ -69,6 +73,11 @@ public class EventManager {
         }
     }
 
+    public SuperMarketBlob getSuperMarketBlob() {
+        return superMarketBlob;
+    }
 
-
+    public void setSuperMarketBlob(SuperMarketBlob superMarketBlob) {
+        this.superMarketBlob = superMarketBlob;
+    }
 }

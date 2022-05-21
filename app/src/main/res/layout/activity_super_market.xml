@@ -23,9 +23,15 @@
         android:id="@+id/RecycleProducts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/_10sdp"
-        android:visibility="visible"
         android:orientation="vertical"
+        android:paddingTop="@dimen/_10sdp"
+        app:flow_horizontalAlign="center"
+        android:textAlignment="center"
+        app:flow_verticalAlign="center"
+        android:gravity="center"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/repeat_game1" />
 
     <TextView
@@ -44,5 +50,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/RecycleProducts"
         app:layout_constraintVertical_bias="0.789" />
+
+    <TextView
+        android:id="@+id/request"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reparto"
+        app:layout_constraintBottom_toTopOf="@+id/button_mainButton_speakGame1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/RecycleProducts">
+
+    </TextView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

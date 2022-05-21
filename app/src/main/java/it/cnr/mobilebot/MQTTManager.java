@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.Toast;
 
 
 import com.google.gson.Gson;
@@ -355,8 +356,8 @@ public class MQTTManager {
                 String mmm = new String(message.getPayload());
                 superMarketBlob = new Gson().fromJson(mmm,SuperMarketBlob.class);
                 if(!superMarketBlob.getRequest().isEmpty()) {
+                    EventManager.getInstance().setSuperMarketBlob(superMarketBlob);
                     Intent intent = new Intent(EventManager.getInstance().getContext(), SuperMarket.class);
-                    intent.putExtra("Description", superMarketBlob.getVocalDescription());
                     EventManager.getInstance().getContext().startActivity(intent);
 
                     faceActivity.speakText(superMarketBlob.getInitialMessage() + "." + superMarketBlob.getRequest(), false);

@@ -47,8 +47,8 @@ dependencies {
     //compile group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.5'
     //implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
     //implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.0.2'
-    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
-    compile 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
+    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
 
 
@@ -58,6 +58,7 @@ dependencies {
     implementation 'com.github.markushi:circlebutton:1.1'
     implementation 'com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5'
     implementation 'com.github.vikramezhil:DroidSpeech:v2.0.3'
+    implementation 'org.apache.commons:commons-text:1.9'
    // implementation 'com.github.vikramezhil:DroidSpeech2.0:vx.y'
     // implementation 'com.squareup.picasso:picasso:2.6.0-SNAPSHOT'
 
