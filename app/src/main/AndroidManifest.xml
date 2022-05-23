@@ -24,7 +24,11 @@
         android:supportsRtl="true"
         android:testOnly="false"
         android:theme="@style/AppTheme">
-        <activity android:name=".logic.CognitiveGameItem"></activity>
+        <activity
+            android:name=".game.mindgames.supermarket.SuperMarket"
+            android:screenOrientation="landscape">
+        </activity>
+        <activity android:name=".logic.CognitiveGameItem" />
         <activity
             android:name=".GameSelectorActivity"
             android:screenOrientation="landscape" />

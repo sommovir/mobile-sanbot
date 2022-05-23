@@ -91,6 +91,8 @@ import it.cnr.mobilebot.logic.LoggingTag;
 
 import static android.speech.SpeechRecognizer.RESULTS_RECOGNITION;
 
+import org.json.JSONException;
+
 public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnInitListener, ConnectionEventListener, GestureDetector.OnGestureListener {
 
 
@@ -193,6 +195,8 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         EventManager.getInstance().addConnectionEventListener(this);
         mDetector = new GestureDetectorCompat(getApplicationContext(),this);
         requestRecordAudioPermission();
+
+        EventManager.getInstance().setContext(this);
 
 
         View decorView = getWindow().getDecorView();
@@ -494,8 +498,11 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 }, 150);
 
 
-
-                manager.repeat();
+                try {
+                    manager.repeat();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
 

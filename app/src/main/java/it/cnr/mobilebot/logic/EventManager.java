@@ -1,15 +1,32 @@
 package it.cnr.mobilebot.logic;
 
+import android.content.Context;
 import android.provider.MediaStore;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import it.cnr.mobilebot.game.mindgames.supermarket.CheckBox;
+import it.cnr.mobilebot.game.mindgames.supermarket.CheckBoxManager;
+import it.cnr.mobilebot.game.mindgames.supermarket.SuperMarket;
+import it.cnr.mobilebot.game.mindgames.supermarket.SuperMarketBlob;
 
 public class EventManager {
 
     private boolean serverOnline = false;
 
     private static EventManager _instance = null;
+    private Context context;
+    private SuperMarketBlob superMarketBlob;
+    private int correttiG1 = 0;
+
+    public Context getContext() {
+        return context;
+    }
+
+    public void setContext(Context context) {
+        this.context = context;
+    }
 
     private List<ConnectionEventListener> connectionEventListenerList = new LinkedList<>();
     private List<MediaEventListener> mediaEventListeners = new LinkedList<>();
@@ -52,6 +69,14 @@ public class EventManager {
         }
     }
 
+    public int getCorrettiG1() {
+        return correttiG1;
+    }
+
+    public void setCorrettiG1(int correttiG1) {
+        this.correttiG1 = correttiG1;
+    }
+
     public void playYouTubeVideo(String id){
         for (MediaEventListener listener : mediaEventListeners) {
             System.out.println("CALLING LISTENER");
@@ -59,6 +84,11 @@ public class EventManager {
         }
     }
 
+    public SuperMarketBlob getSuperMarketBlob() {
+        return superMarketBlob;
+    }
 
-
+    public void setSuperMarketBlob(SuperMarketBlob superMarketBlob) {
+        this.superMarketBlob = superMarketBlob;
+    }
 }

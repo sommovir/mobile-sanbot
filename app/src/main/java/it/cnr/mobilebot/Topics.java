@@ -16,7 +16,8 @@ public enum Topics {
     BUTTON_PRESSED("button_pressed"),
     REPEAT("repeat"),
     INFO("info_channel"),
-    GETDEVICE("get_device");
+    GETDEVICE("get_device"),
+    MINDGAME("mindgames");
 
     private Topics(String topic) {
         this.topic = topic;
