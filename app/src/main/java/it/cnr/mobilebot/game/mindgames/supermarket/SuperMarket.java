@@ -275,7 +275,12 @@ public class SuperMarket extends AppCompatActivity {
                     LevenshteinResults apply = ldd.apply(userMessage.get(0).toLowerCase(), next.getName().toLowerCase());
                     String[] split = userMessage.get(0).split(" ");
                     String[] split1 = next.getName().split(" ");
-                    if(apply.getDistance() <= 1 || split[split.length -  1].toLowerCase().equals(split1[split1.length -  1].toLowerCase())){
+                    if(apply.getDistance() <= 1 || split[split.length -  1].toLowerCase().equals(split1[split1.length -  1].toLowerCase())
+
+                            || ldd.apply(split[split.length -  1].toLowerCase(),split1[split1.length -  1].toLowerCase() ).getDistance()<=1
+
+
+                    ){
                         EventManager.getInstance().setCorrettiG1(EventManager.getInstance().getCorrettiG1() + 1);
                         MQTTManager.faceActivity.speakText("Esatto", false);
                         score.setText(EventManager.getInstance().getCorrettiG1() + "/" + toGet);
