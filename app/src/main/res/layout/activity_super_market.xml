@@ -9,15 +9,16 @@
 
     <Button
         android:id="@+id/repeat_game1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Ripeti istruzioni"
+        android:layout_width="170dp"
+        android:layout_height="50dp"
+        android:text="Istruzioni"
+        app:icon="@android:drawable/ic_lock_silent_mode_off"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.499"
+        app:layout_constraintEnd_toStartOf="@+id/button_lista_spesa"
+        app:layout_constraintHorizontal_bias="0.758"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.044"></Button>
+        app:layout_constraintVertical_bias="0.026"></Button>
 
     <TextView
         android:id="@+id/score"
@@ -35,16 +36,16 @@
         android:id="@+id/RecycleProducts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:orientation="vertical"
         android:paddingTop="@dimen/_10sdp"
-        app:flow_horizontalAlign="center"
         android:textAlignment="center"
-        app:flow_verticalAlign="center"
-        android:gravity="center"
         android:visibility="invisible"
+        app:flow_horizontalAlign="center"
+        app:flow_verticalAlign="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/repeat_game1" />
+        app:layout_constraintTop_toTopOf="@+id/score" />
 
     <TextView
         android:id="@+id/button_mainButton_speakGame1"
@@ -75,5 +76,27 @@
         app:layout_constraintVertical_bias="0.654">
 
     </TextView>
+
+    <Button
+        android:id="@+id/button_lista_spesa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lista della spesa"
+        app:icon="@android:drawable/ic_lock_silent_mode_off"
+        app:layout_constraintBottom_toTopOf="@+id/score"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.138" />
+
+    <Button
+        android:id="@+id/button_reparto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
+        android:text=".. al reparto !"
+        app:icon="@android:drawable/ic_lock_silent_mode_off"
+        app:layout_constraintStart_toEndOf="@+id/button_lista_spesa"
+        tools:layout_editor_absoluteY="13dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1314,6 +1314,10 @@ public class FaceActivity extends AppCompatActivity implements TextToSpeech.OnIn
         return false;
     }
 
+    public boolean isSpeaking(){
+        return tts.isSpeaking();
+    }
+
     public void speakText(String text, boolean autolisten) {
         if(!text.equals("ok basta")) {
             button_stop.setVisibility(View.VISIBLE);

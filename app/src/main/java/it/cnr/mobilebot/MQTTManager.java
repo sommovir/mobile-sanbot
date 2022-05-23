@@ -66,6 +66,8 @@ public class MQTTManager {
         }
     }
 
+
+
     public void setFaceActivity(FaceActivity faceActivity) {
         this.faceActivity = faceActivity;
     }
@@ -354,15 +356,17 @@ public class MQTTManager {
         }if(topic.equals(Topics.MINDGAME.getTopic()+"/demo")){
             try{
                 String mmm = new String(message.getPayload());
+                System.out.println("message arrived in MINDGAME/DEMO");
+                System.out.println(mmm);
                 superMarketBlob = new Gson().fromJson(mmm,SuperMarketBlob.class);
-                if(!superMarketBlob.getRequest().isEmpty()) {
+                if(!superMarketBlob.getVocalRequest().isEmpty()) {
                     EventManager.getInstance().setSuperMarketBlob(superMarketBlob);
                     Intent intent = new Intent(EventManager.getInstance().getContext(), SuperMarket.class);
                     EventManager.getInstance().setCorrettiG1(0);
                     EventManager.getInstance().getContext().startActivity(intent);
 
 
-                    faceActivity.speakText(superMarketBlob.getInitialMessage() + "." + superMarketBlob.getRequest(), false);
+                    //faceActivity.speakText(superMarketBlob.getInitialMessage() + "." + superMarketBlob.getVocalRequest(), false);
 
                 }
             }catch (Exception e){

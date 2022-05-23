@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
@@ -17,6 +18,7 @@ import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,6 +55,21 @@ public class SuperMarket extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_super_market);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        View decorView = getWindow().getDecorView();
+
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN;
+
+        int uiOptionsFull = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        decorView.setSystemUiVisibility(uiOptionsFull);
+
         mp_REC = MediaPlayer.create(this, R.raw.rec_sound);
         button_speak = findViewById(R.id.button_mainButton_speakGame1);
         request = findViewById(R.id.request);
@@ -61,6 +78,11 @@ public class SuperMarket extends AppCompatActivity {
         request.setText(Html.fromHtml(EventManager.getInstance().getSuperMarketBlob().getTextualRequest()));
 //        request.setText(EventManager.getInstance().getSuperMarketBlob().getRequest());
 
+
+        //thread di attesa fine messaggio e enunciazione delle istruzioni:
+        SuperMarketBlob blob = EventManager.getInstance().getSuperMarketBlob();
+
+
         Button repeat = findViewById(R.id.repeat_game1);
         repeat.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,7 +90,36 @@ public class SuperMarket extends AppCompatActivity {
 
                 String message = EventManager.getInstance().getSuperMarketBlob().getVocalDescription();
 
+
                MQTTManager.faceActivity.speakText(message, false);
+
+            }
+        });
+
+
+
+        final Button buttonListaSpesa = findViewById(R.id.button_lista_spesa);
+        buttonListaSpesa.setEnabled(true);
+        buttonListaSpesa.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String message = EventManager.getInstance().getSuperMarketBlob().getInitialMessage();
+
+                MQTTManager.faceActivity.speakText(message, false);
+                buttonListaSpesa.setEnabled(false);
+
+            }
+        });
+
+        Button buttonReparto = findViewById(R.id.button_reparto);
+        buttonReparto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String message = EventManager.getInstance().getSuperMarketBlob().getVocalRequest();
+
+                MQTTManager.faceActivity.speakText(message, false);
 
             }
         });
