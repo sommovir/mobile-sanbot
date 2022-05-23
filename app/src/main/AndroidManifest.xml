@@ -26,8 +26,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".game.mindgames.supermarket.SuperMarket"
-            android:screenOrientation="landscape">
-        </activity>
+            android:exported="false"
+            android:screenOrientation="landscape"/>
         <activity android:name=".logic.CognitiveGameItem" />
         <activity
             android:name=".GameSelectorActivity"

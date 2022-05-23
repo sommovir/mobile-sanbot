@@ -1,3 +1,4 @@
+    public void stopListen(){
 package it.cnr.mobilebot.game.mindgames.supermarket;
 
 import static android.speech.SpeechRecognizer.RESULTS_RECOGNITION;
