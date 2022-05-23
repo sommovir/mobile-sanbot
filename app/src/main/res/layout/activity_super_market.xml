@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/cardview_shadow_end_color"
+    android:background="#275A3F"
     android:gravity="center_horizontal"
     android:orientation="vertical"
     tools:context=".game.mindgames.supermarket.SuperMarket">
@@ -83,6 +83,7 @@
         android:text="Score"
         android:textAlignment="center"
         android:textSize="96sp"
+        android:textColor="#F1FCF6"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -92,9 +93,10 @@
     <TextView
         android:id="@+id/request"
         android:layout_width="match_parent"
-        android:layout_height="96dp"
+        android:layout_height="77dp"
         android:gravity="center_horizontal|center_vertical"
         android:text="Reparto"
+        android:textColor="#F1FCF6"
         app:layout_constraintBottom_toTopOf="@+id/button_mainButton_speakGame1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -216,8 +216,6 @@ public class SuperMarket extends AppCompatActivity {
                     toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                     toast.show();
                     willanswer = false;
-
-
                 }
 
                 @Override
@@ -274,25 +272,26 @@ public class SuperMarket extends AppCompatActivity {
                    while (iterator.hasNext()){
                     LevenshteinDetailedDistance ldd = new LevenshteinDetailedDistance();
                     Product next = iterator.next();
-                    LevenshteinResults apply = ldd.apply(userMessage.get(0).toLowerCase(Locale.ROOT), next.getName().toLowerCase(Locale.ROOT));
+                    LevenshteinResults apply = ldd.apply(userMessage.get(0).toLowerCase(), next.getName().toLowerCase());
                     String[] split = userMessage.get(0).split(" ");
                     String[] split1 = next.getName().split(" ");
-                    if(apply.getDistance() <= 1 || split[split.length -  1].equals(split1[split1.length -  1])){
+                    if(apply.getDistance() <= 1 || split[split.length -  1].toLowerCase().equals(split1[split1.length -  1].toLowerCase())){
                         EventManager.getInstance().setCorrettiG1(EventManager.getInstance().getCorrettiG1() + 1);
                         MQTTManager.faceActivity.speakText("Esatto", false);
+                        score.setText(EventManager.getInstance().getCorrettiG1() + "/" + toGet);
                         iterator.remove();
                         //CheckBoxManager.getInstance().getCheckBoxes().get(0).check.setVisibility(View.VISIBLE);
                         break;
                     }else{
                         MQTTManager.faceActivity.speakText("Hai sbagliato parola", false);
                     }
-                       score.setText(EventManager.getInstance().getCorrettiG1() + "/" + toGet);
+
 
                    }
 
                    if(solutionProducts.isEmpty()){
                        score.setText(EventManager.getInstance().getCorrettiG1() + "/" + toGet);
-                       MQTTManager.faceActivity.speakText("Hai finito il gioco complimenti", false);
+                       MQTTManager.faceActivity.speakText("Complimenti, hai finito il gioco! Non era facile", false);
                    }
                     toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
                     toast.show();
