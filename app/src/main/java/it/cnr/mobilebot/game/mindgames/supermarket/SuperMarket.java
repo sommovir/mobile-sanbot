@@ -1,4 +1,4 @@
-    public void stopListen(){
+
 package it.cnr.mobilebot.game.mindgames.supermarket;
 
 import static android.speech.SpeechRecognizer.RESULTS_RECOGNITION;
@@ -10,15 +10,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,11 +31,8 @@ import java.util.Locale;
 
 import it.cnr.mobilebot.FaceActivity;
 import it.cnr.mobilebot.MQTTManager;
-import it.cnr.mobilebot.MainActivity;
 import it.cnr.mobilebot.R;
-import it.cnr.mobilebot.game.mindgames.GameAdapter;
 import it.cnr.mobilebot.logic.EventManager;
-import it.cnr.mobilebot.logic.LoggingTag;
 
 public class SuperMarket extends AppCompatActivity {
 
@@ -62,7 +58,7 @@ public class SuperMarket extends AppCompatActivity {
         request = findViewById(R.id.request);
         score = findViewById(R.id.score);
         score.setText(EventManager.getInstance().getCorrettiG1() + "/" + toGet);
-        request.setText(EventManager.getInstance().getSuperMarketBlob().getRequest());
+        request.setText(Html.fromHtml(EventManager.getInstance().getSuperMarketBlob().getTextualRequest()));
 //        request.setText(EventManager.getInstance().getSuperMarketBlob().getRequest());
 
         Button repeat = findViewById(R.id.repeat_game1);
@@ -70,7 +66,7 @@ public class SuperMarket extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                String message = EventManager.getInstance().getSuperMarketBlob().getInitialMessage();
+                String message = EventManager.getInstance().getSuperMarketBlob().getVocalDescription();
 
                MQTTManager.faceActivity.speakText(message, false);
 
@@ -216,11 +212,11 @@ public class SuperMarket extends AppCompatActivity {
 
 
                     Toast toast = Toast.makeText(getApplicationContext(), "hai detto: " + userMessage.get(0), Toast.LENGTH_SHORT);
-                    List<Products> solutionProducts = EventManager.getInstance().getSuperMarketBlob().getSolutionProducts();
-                    Iterator<Products> iterator = solutionProducts.iterator();
+                    List<Product> solutionProducts = EventManager.getInstance().getSuperMarketBlob().getSolutionProducts();
+                    Iterator<Product> iterator = solutionProducts.iterator();
                    while (iterator.hasNext()){
                     LevenshteinDetailedDistance ldd = new LevenshteinDetailedDistance();
-                    Products next = iterator.next();
+                    Product next = iterator.next();
                     LevenshteinResults apply = ldd.apply(userMessage.get(0).toLowerCase(Locale.ROOT), next.getName().toLowerCase(Locale.ROOT));
                     String[] split = userMessage.get(0).split(" ");
                     String[] split1 = next.getName().split(" ");

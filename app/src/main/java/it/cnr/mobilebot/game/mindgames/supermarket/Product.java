@@ -3,7 +3,7 @@ package it.cnr.mobilebot.game.mindgames.supermarket;
 import java.util.Date;
 import java.util.Random;
 
-public class Products {
+public class Product {
 
     private long id;
     private String name;//carota:carote:carote:carote
@@ -12,15 +12,15 @@ public class Products {
     public final String separatore = ",";
     public final String UNKNOWN = "unknown";
 
-    public Products() {
+    public Product() {
     }
 
-    public Products(long id, String name) {
+    public Product(long id, String name) {
         this.id = id;
         setName(name);
     }
 
-    public Products(long id, String name, Department dep, String alternatives) throws MindGameExceptions {
+    public Product(long id, String name, Department dep, String alternatives) throws MindGameExceptions {
         this.id = id;
         setName(name);
         setDepartment(dep);
@@ -85,8 +85,8 @@ public class Products {
         if (obj == null) {
             return false;
         }
-        if (obj instanceof Products) {
-            Products p = (Products) obj;
+        if (obj instanceof Product) {
+            Product p = (Product) obj;
             if ((p.getDepartment() == null && this.department == null || p.getDepartment().equals(this.department))
                     && p.getName().equals(this.name)
                     && p.getId() == this.getId()) {

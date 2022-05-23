@@ -438,6 +438,7 @@ public class MQTTManager {
                 faceActivity.esprimiQualcheDubbio();
             }
             if(text.equals("rage")){
+                System.out.println("SONO FURIOSO, VI SMONTO");
                 faceActivity.incazzati();
             }
         }

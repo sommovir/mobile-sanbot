@@ -5,20 +5,47 @@ import java.util.List;
 public class SuperMarketBlob {
 
     private String initialMessage; //watson text
-    private List<Products> solutionProducts;
-    private String request;
+    private List<Product> solutionProducts;
+    private String textualRequest;
+    private String vocalRequest;
     private String vocalDescription;
     private String textualDescription;
 
     public SuperMarketBlob() {
     }
 
-    public SuperMarketBlob(List<Products> solutionProducts, String request, String vocalDescription, String textualDescription) {
-        this.solutionProducts = solutionProducts;
-        this.request = request;
-        this.vocalDescription = vocalDescription;
-        this.textualDescription = textualDescription;
+    public String getInitialMessage() {
+        return initialMessage;
     }
+
+    public void setInitialMessage(String initialMessage) {
+        this.initialMessage = initialMessage;
+    }
+
+    public List<Product> getSolutionProducts() {
+        return solutionProducts;
+    }
+
+    public void setSolutionProducts(List<Product> solutionProducts) {
+        this.solutionProducts = solutionProducts;
+    }
+
+    public String getTextualRequest() {
+        return textualRequest;
+    }
+
+    public void setTextualRequest(String textualRequest) {
+        this.textualRequest = textualRequest;
+    }
+
+    public String getVocalRequest() {
+        return vocalRequest;
+    }
+
+    public void setVocalRequest(String vocalRequest) {
+        this.vocalRequest = vocalRequest;
+    }
+
 
     public String getVocalDescription() {
         return vocalDescription;
@@ -32,32 +59,17 @@ public class SuperMarketBlob {
         return textualDescription;
     }
 
-    public String getInitialMessage() {
-        return initialMessage;
-    }
-
-    public void setInitialMessage(String initialMessage) {
-        this.initialMessage = initialMessage;
-    }
-
     public void setTextualDescription(String textualDescription) {
         this.textualDescription = textualDescription;
     }
 
-    public List<Products> getSolutionProducts() {
-        return solutionProducts;
-    }
-
-    public void setSolutionProducts(List<Products> solutionProducts) {
+    public SuperMarketBlob(String initialMessage, List<Product> solutionProducts, String textualRequest, String vocalRequest, String vocalDescription, String textualDescription) {
+        this.initialMessage = initialMessage;
         this.solutionProducts = solutionProducts;
-    }
-
-    public String getRequest() {
-        return request;
-    }
-
-    public void setRequest(String request) {
-        this.request = request;
+        this.textualRequest = textualRequest;
+        this.vocalRequest = vocalRequest;
+        this.vocalDescription = vocalDescription;
+        this.textualDescription = textualDescription;
     }
 
 
