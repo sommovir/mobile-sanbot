@@ -75,7 +75,7 @@ public class SuperMarket extends AppCompatActivity {
         request = findViewById(R.id.request);
         score = findViewById(R.id.score);
         score.setText(EventManager.getInstance().getCorrettiG1() + "/" + toGet);
-        request.setText(Html.fromHtml(EventManager.getInstance().getSuperMarketBlob().getTextualRequest()));
+        request.setText("premi il bottone 'LISTA DELLA SPESA' e poi 'AL REPARTO' per proseguire");
 //        request.setText(EventManager.getInstance().getSuperMarketBlob().getRequest());
 
 
@@ -99,6 +99,8 @@ public class SuperMarket extends AppCompatActivity {
 
 
         final Button buttonListaSpesa = findViewById(R.id.button_lista_spesa);
+        final Button buttonReparto = findViewById(R.id.button_reparto);
+
         buttonListaSpesa.setEnabled(true);
         buttonListaSpesa.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -108,11 +110,14 @@ public class SuperMarket extends AppCompatActivity {
 
                 MQTTManager.faceActivity.speakText(message, false);
                 buttonListaSpesa.setEnabled(false);
+                buttonReparto.setEnabled(true);
+
 
             }
         });
 
-        Button buttonReparto = findViewById(R.id.button_reparto);
+
+        buttonReparto.setEnabled(false);
         buttonReparto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -120,6 +125,7 @@ public class SuperMarket extends AppCompatActivity {
                 String message = EventManager.getInstance().getSuperMarketBlob().getVocalRequest();
 
                 MQTTManager.faceActivity.speakText(message, false);
+                request.setText(Html.fromHtml(EventManager.getInstance().getSuperMarketBlob().getTextualRequest()));
 
             }
         });
