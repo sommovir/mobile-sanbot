@@ -342,4 +342,12 @@ public class SuperMarket extends AppCompatActivity {
         listening = false;
     }
 
+
+    @Override
+    public void onBackPressed()
+    {
+        Intent intent = new Intent(this,FaceActivity.class);
+        startActivity(intent);
+    }
+
 }
